@@ -109,34 +109,36 @@ def main():
         hvac.setPowerConsumption(deltaConsumption)
         
         startTimer = time.time()
+        consumtionTimer = time.time()
         startTime = time.gmtime()
         print("SIMULATION START TIME : " + str(startTime.tm_hour+1) + ":" + str(startTime.tm_min) + ":" + str(startTime.tm_sec))
         try:
             time_counter = 0
             while True: #perchè la simulazione è continua
                 if time_counter < timer_threshold:
-                    print("timer : " + str(time_counter))
+                    print(f"timer : {time_counter:.2f}")
                 temperatures.append(hvac.getTemperature_Internal())
                 setpoints.append(hvac.getSetpoint())
+                #calculate consumption
+                timerAux = time.time() - consumtionTimer
+                consumptionPerDeltaT.append(CalculateConsumption(hvac,timerAux))
+                consumtionTimer = time.time()
+
                 if hvac.state == HVACState.ON and hvac.getTemperature_Internal() >= hvac.getSetpoint():
                     hvac.TurnOff()
                     break
                 if time_counter > timer_threshold: #nel caso d'uso il sistema si accende dopo una soglia (60 secondi)
                     if hvac.state == HVACState.OFF:
                         hvac.TurnOn()
-                        consumtionTimer = time.time()
                     oldTemp = hvac.getTemperature_Internal()
                     hvac.HVAC_Working(deltaTemp,setpoint)
                     newTemp = hvac.getTemperature_Internal()
-                    if(oldTemp != newTemp):
-                        timerAux = time.time() - consumtionTimer
-                        consumptionPerDeltaT.append(CalculateConsumption(hvac,timerAux))
-                        consumtionTimer = time.time()
                     hvac.PrintStatus()
-                time_counter = round((time.time() - startTimer),2)
                 time.sleep(time_refresh) #per aggiornare il sistema a intervalli deltaT
+                time_counter = (int)(time.time() - startTimer)
         except KeyboardInterrupt :
-            print("Exiting...")
+            print("SIMULATION INTERRUPTED BY USER COMMAND")
+            exit()
             pass
 
         print("estimated power consumption is : " + str(np.sum(consumptionPerDeltaT)) + " kW/h")
@@ -153,12 +155,15 @@ def main():
 
 
 def CalculateConsumption(hvac, time):
-    deltaTemp = abs(hvac.getTemperature_Internal() - hvac.getSetpoint())
-    deltaTempMax = 15 #da approfondire, indica quando il sistema raggiunge la portata massima di capacità, per esempio se Temp > 15°C allora consumi e inefficienza massima
-    absortion = (hvac.power_consumption * 1000) * (deltaTemp/deltaTempMax)
-    consumption_joule = absortion * time
-    consumption = consumption_joule / (3.6 * 10**6)
-    return consumption
+    if(hvac.state == HVACState.ON):
+        deltaTemp = abs(hvac.getTemperature_Internal() - hvac.getSetpoint())
+        deltaTempMax = 15 #da approfondire, indica quando il sistema raggiunge la portata massima di capacità, per esempio se Temp > 15°C allora consumi e inefficienza massima
+        absortion = (hvac.power_consumption * 1000) * (deltaTemp/deltaTempMax)
+        consumption_joule = absortion * time
+        consumption = consumption_joule / (3.6 * 10**6)
+        return consumption
+    else:
+        return 0
 
 
    
