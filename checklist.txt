@@ -1,0 +1,8 @@
+lasciare weather basica al momento fino a implementazione di un vero modello termico
+
+TODO:
+implementare uno pseudocodice per il secondo caso d'uso
+implementare una funzione per calcolare il consumo in watt (in un momento t)
+approfondire pyproject.toml per esportare libreria
+ristrutturare il main per il nuovo caso d'uso
+approfondire funzione thermalWorking(...) in hvacTypes

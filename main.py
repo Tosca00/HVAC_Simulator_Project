@@ -24,67 +24,24 @@ Bozza pseudocodice :
 Valori di controllo : 
     deltaEnergia -> Quanta energia consuma il condizionatore in deltaT
     deltaTemperatura -> Quanto cambia la temperatura interna in deltaT
+
+Obiettivo seconda release :
+    Inizializzazione variabili (basiche e di controllo),
+    accendere il condizionatore a un orario specifico,
+    setpoint 22 [C°], temperatura interna 21 [C°],
+    Dopo un certo orario si cambia setpoint a 19 [C°], il condizionatore (dovrebbe) spegnersi (da verificare),
+    implementare un modello per il contenimento e/o la riduzione della temperatura interna
+
+
+    nota : condizionatore consuma fino a 800 watt in picco potenza
+           potrebbe essere che con 600 watt la temperatura aumenti da 21 a 24 in 6 minuti
+
 '''
 
 import time
-from enum import Enum
 import numpy as np
 import matplotlib.pyplot as plt
-
-class HVACState(Enum):
-    OFF = 0
-    ON = 1
-
-class HVAC:
-    def __init__(self):
-        self.power_consumption = 0
-        self.state = HVACState.OFF
-        self.t_int = 18
-        self.setpoint = 5
-
-    @property
-    def t_int(self):
-        return self._t_int
-
-    @t_int.setter
-    def t_int(self, value):
-        self._t_int = round(value, 1)
-
-    #getters and setters
-    def getTemperature_Internal(self):
-        return self.t_int
-    def setTemperature_Internal(self, t_int):
-        self.t_int = round(t_int,1)
-    def getSetpoint(self):
-        return self.setpoint
-    def setSetpoint(self, setpoint):
-        self.setpoint = setpoint
-    def getPowerConsumption(self):
-        return self.power_consumption
-    def setPowerConsumption(self, power_consumption):
-        self.power_consumption = power_consumption
-    
-    #da definire meglio, per il momento basiche
-    def TurnOff(self):
-        self.state = HVACState.OFF
-        self.power_consumption = 0
-        print("HVAC is now OFF")
-    def TurnOn(self):
-        self.state = HVACState.ON
-        print("HVAC is now ON")
-
-    #definisce il ciclo di funzionamento del sistema HVAC
-    def HVAC_Working(self,deltaTemp,setpoint):
-        self.t_int += round(deltaTemp,1)
-        self.setpoint = setpoint
-
-    #stampa lo stato attuale del sistema HVAC, solo se acceso
-    def PrintStatus(self):
-        if self.state == HVACState.ON:
-            print("current setpoint : " + str(self.getSetpoint()) + "°C")
-            print("temperature : " + str(self.getTemperature_Internal())+ "°C")
-        else:
-            print("Cannot print status: HVAC is OFF")
+from lib.hvac.hvacTypes import HVAC
 
 
 #aux variables for debugging 
@@ -95,7 +52,7 @@ def main():
         #basic variables
         hvac = HVAC()
         time_refresh = 1 #seconds
-        timer_threshold = 60 #seconds
+        timer_threshold = 20 #seconds
         consumptionPerDeltaT = []
 
         #for graphs
@@ -108,7 +65,7 @@ def main():
         setpoint = 22 
         hvac.setPowerConsumption(deltaConsumption)
         
-        startTimer = time.time()
+        startTimer = round(time.time(),0)
         consumtionTimer = time.time()
         startTime = time.gmtime()
         print("SIMULATION START TIME : " + str(startTime.tm_hour+1) + ":" + str(startTime.tm_min) + ":" + str(startTime.tm_sec))
@@ -116,7 +73,7 @@ def main():
             time_counter = 0
             while True: #perchè la simulazione è continua
                 if time_counter < timer_threshold:
-                    print(f"timer : {time_counter:.2f}")
+                    print(f"timer : {time_counter:.6f}")
                 temperatures.append(hvac.getTemperature_Internal())
                 setpoints.append(hvac.getSetpoint())
                 #calculate consumption
@@ -124,18 +81,18 @@ def main():
                 consumptionPerDeltaT.append(CalculateConsumption(hvac,timerAux))
                 consumtionTimer = time.time()
 
-                if hvac.state == HVACState.ON and hvac.getTemperature_Internal() >= hvac.getSetpoint():
+                if hvac.getHVAC_State() == HVAC.HVAC_State.ON and hvac.getTemperature_Internal() >= hvac.getSetpoint():
                     hvac.TurnOff()
                     break
                 if time_counter > timer_threshold: #nel caso d'uso il sistema si accende dopo una soglia (60 secondi)
-                    if hvac.state == HVACState.OFF:
+                    if hvac.getHVAC_State() == HVAC.HVAC_State.OFF:
                         hvac.TurnOn()
                     oldTemp = hvac.getTemperature_Internal()
                     hvac.HVAC_Working(deltaTemp,setpoint)
                     newTemp = hvac.getTemperature_Internal()
                     hvac.PrintStatus()
                 time.sleep(time_refresh) #per aggiornare il sistema a intervalli deltaT
-                time_counter = (int)(time.time() - startTimer)
+                time_counter = (round(time.time(),0) - startTimer)
         except KeyboardInterrupt :
             print("SIMULATION INTERRUPTED BY USER COMMAND")
             exit()
@@ -155,7 +112,7 @@ def main():
 
 
 def CalculateConsumption(hvac, time):
-    if(hvac.state == HVACState.ON):
+    if(hvac.getHVAC_State() == HVAC.HVAC_State.ON):
         deltaTemp = abs(hvac.getTemperature_Internal() - hvac.getSetpoint())
         deltaTempMax = 15 #da approfondire, indica quando il sistema raggiunge la portata massima di capacità, per esempio se Temp > 15°C allora consumi e inefficienza massima
         absortion = (hvac.power_consumption * 1000) * (deltaTemp/deltaTempMax)
