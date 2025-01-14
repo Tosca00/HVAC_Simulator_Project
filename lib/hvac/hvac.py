@@ -1,5 +1,5 @@
 from enum import Enum
-from lib.room.roomInit import *
+from ..room.init import *
 
 class HVAC:
 
@@ -19,7 +19,9 @@ class HVAC:
         self.mode = self.HVAC_Mode.HEATING
         self.t_int = 18 #°C
         self.setpoint = 5 #°C
-        peak_power = 800 #W
+        self.peak_power = 1000 #W
+        self.BTUs = 8000 #BTUs
+        self.tempDiff = 2
 
     @property
     def t_int(self):
@@ -67,11 +69,16 @@ class HVAC:
 
     #stampa lo stato attuale del sistema HVAC, solo se acceso
     def PrintStatus(self):
-        if self.state == self.HVAC_State.ON:
-            print("current setpoint : " + str(self.getSetpoint()) + "°C")
-            print("temperature : " + str(self.getTemperature_Internal())+ "°C")
+        print(f"current setpoint : {str(self.getSetpoint())} °C")
+        print(f"temperature : {str(self.getTemperature_Internal())} °C")
+        if self.getHVAC_State() == self.HVAC_State.OFF:
+            mode_str = "NO MODE"
+        elif self.getHVACMode() == self.HVAC_Mode.COOLING:
+            mode_str = "COOLING"
         else:
-            print("Cannot print status: HVAC is OFF")
+            mode_str = "HEATING"
+        print(f"current mode : {mode_str}")
+        print(f"hvac is {'ON' if self.getHVAC_State() == self.HVAC_State.ON else 'OFF'}")
 
     '''
     secondo caso d'uso, da approfondire
@@ -95,16 +102,16 @@ class HVAC:
             - aumenta la temperatura interna di deltaTemp
         - altrimenti se la modalitá é raffreddamento
             - diminuisci la temperatura interna di deltaTemp
-    '''
+   
 
     #nota: al momento si puó utilzzare solo in modalitá riscaldamento
     def thermalWorking(self, deltaTemp, setpoint):
-        tempDiff = 1
+        tempDiff = 2 #differenziale di temperatura dal setpoint
         if self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.HEATING:
-            if self.getTemperature_Internal() >= self.getSetpoint():
+            if self.getTemperature_Internal() >= self.getSetpoint() + tempDiff:
                 self.TurnOff()
         elif self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.COOLING:
-            if self.getTemperature_Internal() <= self.getSetpoint():
+            if self.getTemperature_Internal() <= self.getSetpoint() - tempDiff:
                 self.TurnOff()
         elif self.getHVAC_State() == self.HVAC_State.OFF:
                 if self.getTemperature_Internal() <= self.getSetpoint() - tempDiff:
@@ -113,7 +120,67 @@ class HVAC:
                 elif self.getTemperature_Internal() >= self.getSetpoint() + tempDiff:
                     self.TurnOn()
                     self.setHVACMode(self.HVAC_Mode.COOLING)
-        if self.getHVACMode() == self.HVAC_Mode.HEATING:
+        if self.getHVACMode() == self.HVAC_Mode.HEATING and self.getHVAC_State() == self.HVAC_State.ON:
             self.setTemperature_Internal(self.getTemperature_Internal() + deltaTemp)
-        elif self.getHVACMode() == self.HVAC_Mode.COOLING:
+        elif self.getHVACMode() == self.HVAC_Mode.COOLING and self.getHVAC_State() == self.HVAC_State.ON:
             self.setTemperature_Internal(self.getTemperature_Internal() - deltaTemp)
+
+ '''
+
+    def CoolingOrHeating(self, deltaTemp, setpoint):
+        import random
+
+        tempDiff = 2  # Temperature differential
+        random_variation = abs(random.gauss(0.02,0.1))  # Add variability
+
+        if self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.HEATING:
+            if self.getTemperature_Internal() >= self.getSetpoint() + self.tempDiff:
+                self.TurnOff()
+        elif self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.COOLING:
+            if self.getTemperature_Internal() <= self.getSetpoint() - self.tempDiff:
+                self.TurnOff()
+        elif self.getHVAC_State() == self.HVAC_State.OFF:
+            if self.getHVACMode() == self.HVAC_Mode.HEATING:
+                if self.getTemperature_Internal() <= self.getSetpoint():
+                    self.TurnOn()
+            elif self.getHVACMode() == self.HVAC_Mode.COOLING:
+                if self.getTemperature_Internal() >= self.getSetpoint():
+                    self.TurnOn()
+        if self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.HEATING:
+            self.setTemperature_Internal(self.getTemperature_Internal() + deltaTemp + random_variation)
+        elif self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.COOLING:
+            self.setTemperature_Internal(self.getTemperature_Internal() - deltaTemp + random_variation)
+
+    def calculate_consumption(self, delta_t):
+        """
+        Calculates the instantaneous watts used by the HVAC system over a given delta_t.
+
+        Args:
+            delta_t (float): The time interval in seconds.
+
+        Returns:
+            float: Watts used by the HVAC system in the given time interval.
+        """
+        import random
+
+        if self.getHVAC_State() == HVAC.HVAC_State.ON:
+            delta_temp = abs(self.getTemperature_Internal() - self.getSetpoint())
+            delta_temp_max = 5  # Maximum capacity point for inefficiency
+            
+            if delta_temp < delta_temp_max:
+                absorption_efficiency = delta_temp / delta_temp_max
+            else:
+                absorption_efficiency = 1  # 100% power
+
+            # Introduce random variation in power consumption
+            random_efficiency_variation = min(abs(random.gauss(0.7, 0.1)),1)
+            instantaneous_power = self.peak_power * absorption_efficiency * random_efficiency_variation  # Power in watts
+
+            # Energy used in the given interval (joules)
+            energy_joules = instantaneous_power * delta_t
+
+            # Convert energy back to watts for the interval
+            watts_used = energy_joules / delta_t
+            return round(watts_used, 2)
+        else:
+            return 0  # No power used if HVAC is OFF

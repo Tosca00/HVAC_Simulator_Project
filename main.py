@@ -41,98 +41,112 @@ Obiettivo seconda release :
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-from lib.hvac.hvacTypes import HVAC
+import threading
+from lib.hvac.hvac import HVAC
+from lib.room.init import *
+import tkinter as tk
+from tkinter import simpledialog
+import pytz
+import datetime
 
 
 #aux variables for debugging 
 debugLists = False
 debugGraphs = True
 
+#semplice funzione una finestra grafica, usata in un thread a parte per non bloccare il main
+def modify_setpoint(hvac: HVAC):
+    root = tk.Tk()
+    root.withdraw()
+    while True:
+        new_setpoint = simpledialog.askinteger("Input", "Inserisci nuovo setpoint:") #il setpoint deve essere un intero 
+        if new_setpoint is not None:
+            hvac.setSetpoint(new_setpoint)
+        else:
+            break
+
+
 def main():
         #basic variables
         hvac = HVAC()
         time_refresh = 1 #seconds
-        timer_threshold = 20 #seconds
-        consumptionPerDeltaT = []
 
         #for graphs
         setpoints = []
         temperatures = []
+        watts = []
 
         #control variables
-        deltaTemp = 0.2 #quanto cambia la temperatura interna in deltaT
+        deltaTemp = 0.05 #quanto cambia la temperatura interna in deltaT
         deltaConsumption = 1.2 #quanta energia consuma il condizionatore in deltaT, in kW
-        setpoint = 22 
+        setpoint = 22
+        temperature = 21
         hvac.setPowerConsumption(deltaConsumption)
-        
+        hvac.setTemperature_Internal(temperature)
+        hvac.setSetpoint(setpoint)
+
         startTimer = round(time.time(),0)
         consumtionTimer = time.time()
         startTime = time.gmtime()
-        print("SIMULATION START TIME : " + str(startTime.tm_hour+1) + ":" + str(startTime.tm_min) + ":" + str(startTime.tm_sec))
+
+        sp_thread = threading.Thread(target=modify_setpoint, args=(hvac,), daemon=True)
+        sp_thread.start()
+
+
+        clock_tz = pytz.timezone('Europe/Rome')
+        rome_time = datetime.datetime.now(clock_tz)
+        print(f"SIMULATION START TIME : {rome_time.strftime('%Y-%m-%d %H:%M:%S')}")
+       
         try:
             time_counter = 0
             while True: #perchè la simulazione è continua
-                if time_counter < timer_threshold:
-                    print(f"timer : {time_counter:.6f}")
+                #vettori per grafici
                 temperatures.append(hvac.getTemperature_Internal())
                 setpoints.append(hvac.getSetpoint())
-                #calculate consumption
+                #calculate consumption per deltaT
                 timerAux = time.time() - consumtionTimer
-                consumptionPerDeltaT.append(CalculateConsumption(hvac,timerAux))
+                watts.append(hvac.calculate_consumption(timerAux))
                 consumtionTimer = time.time()
 
-                if hvac.getHVAC_State() == HVAC.HVAC_State.ON and hvac.getTemperature_Internal() >= hvac.getSetpoint():
-                    hvac.TurnOff()
-                    break
-                if time_counter > timer_threshold: #nel caso d'uso il sistema si accende dopo una soglia (60 secondi)
-                    if hvac.getHVAC_State() == HVAC.HVAC_State.OFF:
-                        hvac.TurnOn()
-                    oldTemp = hvac.getTemperature_Internal()
-                    hvac.HVAC_Working(deltaTemp,setpoint)
-                    newTemp = hvac.getTemperature_Internal()
-                    hvac.PrintStatus()
+                hvac.CoolingOrHeating(deltaTemp,setpoint)
+                if hvac.getHVAC_State() == HVAC.HVAC_State.OFF:
+                    hvac.setTemperature_Internal(hvac.getTemperature_Internal() - loseTemp())
+                print(f"watts : {str(watts[-1])} W")
+                hvac.PrintStatus()
                 time.sleep(time_refresh) #per aggiornare il sistema a intervalli deltaT
                 time_counter = (round(time.time(),0) - startTimer)
         except KeyboardInterrupt :
             print("SIMULATION INTERRUPTED BY USER COMMAND")
-            exit()
+            exit_command = True
             pass
 
-        print("estimated power consumption is : " + str(np.sum(consumptionPerDeltaT)) + " kW/h")
-        print("total time elapsed : " + str(time_counter))
-        print("SIMULATION END TIME : " + str(time.gmtime().tm_hour+1) + ":" + str(time.gmtime().tm_min) + ":" + str(time.gmtime().tm_sec))
+        print(f"total time elapsed : {str(time_counter)} seconds")
+        print(f"SIMULATION END TIME: {rome_time.strftime('%Y-%m-%d %H:%M:%S')}")
+
+        max_watt_time = startTimer + watts.index(max(watts)) * time_refresh
+        rome_tz = pytz.timezone('Europe/Rome')
+        max_watt_time_rome = pytz.utc.localize(datetime.datetime.fromtimestamp(max_watt_time)).astimezone(rome_tz)
+        print(f"maximum consumption is {str(max(watts))} W reached at {max_watt_time_rome.strftime('%Y-%m-%d %H:%M:%S')}")
 
         #set variables for debugging
-        if debugGraphs :
+        if debugGraphs and exit_command == True:
             drawTemperatureGraph(temperatures,setpoints)
-            drawPowerConsumptionGraph(consumptionPerDeltaT)
+            drawPowerConsumptionGraph(watts)
         if debugLists :
             print("----------------------------")
-            print(consumptionPerDeltaT)
+            print(watts)
 
 
-def CalculateConsumption(hvac, time):
-    if(hvac.getHVAC_State() == HVAC.HVAC_State.ON):
-        deltaTemp = abs(hvac.getTemperature_Internal() - hvac.getSetpoint())
-        deltaTempMax = 15 #da approfondire, indica quando il sistema raggiunge la portata massima di capacità, per esempio se Temp > 15°C allora consumi e inefficienza massima
-        absortion = (hvac.power_consumption * 1000) * (deltaTemp/deltaTempMax)
-        consumption_joule = absortion * time
-        consumption = consumption_joule / (3.6 * 10**6)
-        return consumption
-    else:
-        return 0
-
-
-   
-def drawPowerConsumptionGraph(consumptionPerDeltaT):
+def drawPowerConsumptionGraph(watts):
     plt.figure(figsize=(8,4))
-    plt.plot(consumptionPerDeltaT, label='Power Consumption',color='green')
-    plt.xlabel('Time')
-    plt.ylabel('Power Consumption')
-    plt.title('Power Consumption')
+    plt.plot(watts, label='Power Consumption', color='green')
+    plt.xlabel('Time (GMT)')
+    plt.ylabel('Watts')
+    plt.title('Power Consumption Over Time')
     plt.legend()
     plt.grid(True)
     plt.show()
+
 
 def drawTemperatureGraph(temperatures,setpoints):
     plt.figure(figsize=(8,4))

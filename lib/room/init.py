@@ -9,3 +9,9 @@ def createRoom(height, width, length):
 
 def CalculateVolume(room):
     return room.heigth * room.width * room.length
+
+
+#per il momento la perdita di temperatura è costante
+def loseTemp():
+    import random
+    return abs(random.gauss(0.05, 0.1))

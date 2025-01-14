@@ -1,2 +1,2 @@
-from .hvacTypes import *
+from .hvac import *
 
