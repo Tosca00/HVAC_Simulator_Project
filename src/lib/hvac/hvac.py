@@ -58,8 +58,9 @@ class HVAC:
         self.state = self.HVAC_State.OFF
         self.power_consumption = 0
         print("HVAC is now OFF")
-    def TurnOn(self):
+    def TurnOn(self,HVAC_Mode):
         self.state = self.HVAC_State.ON
+        self.setHVACMode(HVAC_Mode)
         print("HVAC is now ON")
 
     #definisce il ciclo di funzionamento del sistema HVAC nel primo caso d'uso
@@ -130,8 +131,8 @@ class HVAC:
     def CoolingOrHeating(self, deltaTemp, setpoint):
         import random
 
-        tempDiff = 2  # Temperature differential
-        random_variation = abs(random.gauss(0.02,0.1))  # Add variability
+        tempDiff = 2  # differenziale da temperatura obiettivo
+        random_variation = abs(random.gauss(0.003,0.1))  # aggiunta varianza
 
         if self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.HEATING:
             if self.getTemperature_Internal() >= self.getSetpoint() + self.tempDiff:
@@ -142,45 +143,30 @@ class HVAC:
         elif self.getHVAC_State() == self.HVAC_State.OFF:
             if self.getHVACMode() == self.HVAC_Mode.HEATING:
                 if self.getTemperature_Internal() <= self.getSetpoint():
-                    self.TurnOn()
+                    self.TurnOn(self.HVAC_Mode.HEATING)
             elif self.getHVACMode() == self.HVAC_Mode.COOLING:
                 if self.getTemperature_Internal() >= self.getSetpoint():
-                    self.TurnOn()
+                    self.TurnOn(self.HVAC_Mode.COOLING)
         if self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.HEATING:
             self.setTemperature_Internal(self.getTemperature_Internal() + deltaTemp + random_variation)
         elif self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.COOLING:
             self.setTemperature_Internal(self.getTemperature_Internal() - deltaTemp + random_variation)
 
     def calculate_consumption(self, delta_t):
-        """
-        Calculates the instantaneous watts used by the HVAC system over a given delta_t.
-
-        Args:
-            delta_t (float): The time interval in seconds.
-
-        Returns:
-            float: Watts used by the HVAC system in the given time interval.
-        """
         import random
 
         if self.getHVAC_State() == HVAC.HVAC_State.ON:
             delta_temp = abs(self.getTemperature_Internal() - self.getSetpoint())
-            delta_temp_max = 5  # Maximum capacity point for inefficiency
+            delta_temp_max = 5  # soglia introdotta per evitare che il sistema consumi troppo
             
             if delta_temp < delta_temp_max:
                 absorption_efficiency = delta_temp / delta_temp_max
             else:
                 absorption_efficiency = 1  # 100% power
 
-            # Introduce random variation in power consumption
-            random_efficiency_variation = min(abs(random.gauss(0.7, 0.1)),1)
-            instantaneous_power = self.peak_power * absorption_efficiency * random_efficiency_variation  # Power in watts
+            random_efficiency_variation = min(abs(random.gauss(0.8, 0.1)),1)
+            instantaneous_power = self.peak_power * absorption_efficiency * random_efficiency_variation
 
-            # Energy used in the given interval (joules)
-            energy_joules = instantaneous_power * delta_t
-
-            # Convert energy back to watts for the interval
-            watts_used = energy_joules / delta_t
-            return round(watts_used, 2)
+            return round(instantaneous_power, 2)
         else:
-            return 0  # No power used if HVAC is OFF
+            return 0 #hvac è spento

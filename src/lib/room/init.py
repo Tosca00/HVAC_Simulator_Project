@@ -14,4 +14,4 @@ def CalculateVolume(room):
 #per il momento la perdita di temperatura è costante
 def loseTemp():
     import random
-    return abs(random.gauss(0.05, 0.1))
+    return abs(random.gauss(0.005, 0.1))
