@@ -2,10 +2,17 @@ lasciare weather basica al momento fino a implementazione di un modello termico 
 
 TODO:
 fix colonna ['Mode'] nel dataframe
+
+tests:
 parametrizzare un array di controllo con un elemento per cambio di comportamento timestamp, setpoint, funzionamento
 un elemento con modo funzionamento nullo interrompe simulazione
 partenza timestamp predetederminato
+
+
+main:
 no sleep
 ogni ciclo un secondo sul timestamp
+
+hvac:
 implementare un vero stato di on/off (esempio 30 gradi setpoint, 15 di temperatura e andamento decrescente non è un errore)
 approfondire pyproject.toml per esportare libreria (potrebbe non servire in python)
