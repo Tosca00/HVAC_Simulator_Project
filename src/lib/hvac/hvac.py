@@ -2,9 +2,15 @@ from enum import Enum
 from src.lib.hvac.hvac_exception import HVACException
 from ..weather.weather import Weather
 import random
-
+from ..room.roomGeometry import *
 class HVAC:
 
+    class POWER_Mode:
+        DELTA_TEMP_HIGH = 5
+        DELTA_TEMP_MEDIUM = 2
+        DELTA_TEMP_LOW = 0.5
+        def __init__(self):
+            pass
     class HVAC_Mode(Enum):
         HEATING = 0
         COOLING = 1
@@ -20,11 +26,15 @@ class HVAC:
         self.state = self.HVAC_State.OFF
         self.mode = self.HVAC_Mode.HEATING
         self.t_int = 21 #°C
-        self.setpoint = 5 #°C
+        self.setpoint = 18 #°C
         self.peak_power = 1000 #W
-        self.BTUs = 8000 #BTUs
+        self.BTUs = 9000 #BTUs
         self.tempDiff = 2
         self.deltaEn = 0.1 #kWh
+        self.efficiency = 0.98 #%
+        self.Power_Watt = self.BTUs * 0.29307107 #W
+        
+        
 
     @property
     def t_int(self):
@@ -32,13 +42,13 @@ class HVAC:
 
     @t_int.setter
     def t_int(self, value):
-        self._t_int = round(value, 2)
+        self._t_int = round(value, 4)
 
     #getters and setters
     def getTemperature_Internal(self):
         return self.t_int
     def setTemperature_Internal(self, t_int):
-        self.t_int = round(t_int,2)
+        self.t_int = round(t_int,4)
     def getSetpoint(self):
         return self.setpoint
     def setSetpoint(self, setpoint):
@@ -138,9 +148,7 @@ class HVAC:
 
  '''
 
-    def CoolingOrHeating(self, deltaTemp, setpoint):
-        random_variation = abs(random.gauss(0.003,0.01))  # aggiunta varianza
-
+    def CoolingOrHeating(self, room):
         if self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.HEATING:
             if self.getTemperature_Internal() >= self.getSetpoint() + self.tempDiff:
                 self.setInactive()
@@ -155,30 +163,43 @@ class HVAC:
                 if self.getTemperature_Internal() >= self.getSetpoint():
                     self.TurnOn(self.HVAC_Mode.COOLING)
         if self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.HEATING:
-            self.setTemperature_Internal(self.getTemperature_Internal() + deltaTemp + random_variation)
+            deltaT = self.ChangeTemp(room)
+            self.setTemperature_Internal(self.getTemperature_Internal() + deltaT)
+            print(f"deltaT : {deltaT}")
         elif self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.COOLING:
-            self.setTemperature_Internal(self.getTemperature_Internal() - deltaTemp - random_variation)
+            deltaT = self.ChangeTemp(room)
+            self.setTemperature_Internal(self.getTemperature_Internal() - deltaT)
 
-    def calculate_consumption(self, delta_t):
+    def calculate_consumption(self):
         if self.getHVAC_State() == HVAC.HVAC_State.ON:
             if self.getHVACMode() == HVAC.HVAC_Mode.HEATING:
                 delta_temp = abs(self.getTemperature_Internal() - self.getSetpoint() + self.tempDiff)
             else:
                 delta_temp = abs(self.getTemperature_Internal() - self.getSetpoint() - self.tempDiff)
-            delta_temp_max = 3  # soglia introdotta per evitare che il sistema consumi troppo
+            delta_temp_max = 3.5  # soglia introdotta per evitare che il sistema consumi troppo
             
             if delta_temp < delta_temp_max:
-                absorption_efficiency = delta_temp / delta_temp_max
+                effective_power = delta_temp / delta_temp_max
             else:
-                absorption_efficiency = 1  # 100% power
-
-            random_efficiency_variation = min(abs(random.gauss(0.95, 0.02)),1)
-            instantaneous_power = self.peak_power * absorption_efficiency * random_efficiency_variation
-
+                effective_power = 1  # 100% power
+            instantaneous_power = self.peak_power * effective_power
+            self.setPowerConsumption(instantaneous_power)
             return round(instantaneous_power, 2)
         else:
             return 0 #hvac è spento
         
+
+    
+    def UpdateTemp(self, room: Room):
+        consumption = self.calculate_consumption()
+        power_factor = consumption / 1000.0
+        temp_change = self.changeTemp(room) * power_factor
+
+        if self.getHVAC_State() == self.HVAC_State.ON:
+            if self.getHVACMode() == self.HVAC_Mode.HEATING:
+                self.setTemperature_Internal(self.getTemperature_Internal() + temp_change)
+            elif self.getHVACMode() == self.HVAC_Mode.COOLING:
+                self.setTemperature_Internal(self.getTemperature_Internal() - temp_change)
 
     def setHvac(self,parametrized_array,position):
                 if position > len(parametrized_array):
@@ -193,3 +214,35 @@ class HVAC:
                         self.TurnOn(self.getHVACMode())
                 if parametrized_array[position][3] == "OFF":
                         self.TurnOff()
+
+    def adjust_power_based_on_temp(self):
+        temp_diff = abs(self.getTemperature_Internal() - self.getSetpoint())
+        if temp_diff < 1:
+            self.Power_Watt = self.BTUs * 0.1 * 0.29307107  # Reduce power to 10% when close to setpoint
+        elif temp_diff < 2:
+            self.Power_Watt = self.BTUs * 0.5 * 0.29307107  # Reduce power to 50% when moderately close to setpoint
+        else:
+            self.Power_Watt = self.BTUs * 0.29307107  # Full power when far from setpoint
+
+    def ChangeTemp(self, room: Room):
+        # Calculate temperature difference
+        temp_diff = self.getTemperature_Internal() - Weather.degrees
+
+        # Energy supplied by the HVAC system
+        Q_In = self.Power_Watt * self.efficiency 
+
+        # Energy lost to the environment
+        Q_Out = room.heatLossCoefficient * room.wallsArea * temp_diff 
+
+        # Net energy change
+        Q_eff = Q_In - Q_Out
+
+        # Effective temperature change
+        delta_temp_effective = Q_eff / room.heatCapacity
+
+        # Power consumption for this interval
+        self.power_consumption = abs(Q_In)
+
+        # Return the temperature change
+        return delta_temp_effective
+            

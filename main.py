@@ -116,8 +116,8 @@ def main():
         hvac = HVAC()
         time_refresh = 1 #seconds
 
-        weather = Weather(20,50,80,70)
-        room = Room(5,5,5,20)
+        weather = Weather(20,50,80,70,1.225,)
+        room = Room(4,3,5,25,0.2,weather)
 
         #control variables
         deltaTemp = 0.002 #quanto cambia la temperatura interna in deltaT
@@ -163,7 +163,7 @@ def main():
             pass
         
         '''
-
+        
         startTime = datetime.datetime.strptime(parametrized_array[0][0], '%Y-%m-%d %H:%M:%S')
         hvac.setHvac(parametrized_array,0)
         try:
@@ -180,11 +180,11 @@ def main():
                     i += 1
                 timerAux = time.time() - consumtionTimer
                 consumtionTimer = time.time()
-                hvac.CoolingOrHeating(deltaTemp,setpoint)
-                if hvac.getHVAC_State() != hvac.HVAC_State.ON:
-                    loseTemp(weather,hvac)
+                hvac.CoolingOrHeating(room)
+                
+                loseTemp(weather,hvac)
                 #print(f"temperature : {str(hvac.getTemperature_Internal())} °C")
-                df = pd.concat([df, pd.DataFrame([[hvac.getTemperature_Internal(), hvac.getSetpoint(), hvac.calculate_consumption(timerAux), startTime, hvac.getHVACMode(),weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp','Mode',"Ambient_Temperature"])], ignore_index=True)
+                df = pd.concat([df, pd.DataFrame([[hvac.getTemperature_Internal(), hvac.getSetpoint(), hvac.getPowerConsumption(), startTime, hvac.getHVACMode(),weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp','Mode',"Ambient_Temperature"])], ignore_index=True)
                 startTime += datetime.timedelta(seconds=1)
                 #print(f"date : {startTime.strftime('%Y-%m-%d %H:%M:%S')}")
                 
@@ -198,10 +198,10 @@ def main():
         #print(f"total time elapsed : {str(time_counter)} seconds")
         df.to_csv('src/data.csv', index=False)
         print(f"startTime valude : {parametrized_array[len(parametrized_array)-1][0]}")
-        print(f"room temperature : {str(room.temperature)} °C")
+        #print(f"room temperature : {str(room.temperature)} °C")
+
 
         '''
-        
         print(f"SIMULATION END TIME: {rome_date.strftime('%Y-%m-%d %H:%M:%S')}")
 
         max_watt_row = df.loc[df['Watts'].idxmax()]
@@ -214,6 +214,7 @@ def main():
             plot_powerConsumption(df)
             print(df)
 
+       
         if debugLists :
             print("----------------------------")
 
