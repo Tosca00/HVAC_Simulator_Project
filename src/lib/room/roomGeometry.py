@@ -33,8 +33,7 @@ class Room:
     
 #per il momento la perdita di temperatura è costante e converge su quella ambiente
 def loseTemp(weather: Weather, hvac):
-    if hvac.getHVAC_State() != hvac.HVAC_State.ON:
-        diff = hvac.getTemperature_Internal() - weather.degrees
-        decay_factor = 0.1 / (1 + abs(diff))  # Larger diff => slower drop, smaller diff => faster drop
-        adjusted_diff = diff * (1 - decay_factor)
-        hvac.setTemperature_Internal(weather.degrees + adjusted_diff)
+    diff = hvac.getTemperature_Internal() - weather.degrees
+    decay_factor = 0.001  # Adjust this factor to control the rate of exponential decay
+    adjusted_diff = diff * math.exp(-decay_factor)
+    hvac.setTemperature_Internal(weather.degrees + adjusted_diff)

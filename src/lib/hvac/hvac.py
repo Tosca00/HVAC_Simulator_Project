@@ -148,6 +148,12 @@ class HVAC:
 
  '''
 
+    def changePower(self):
+        powerFactor = 1
+        if self.getTemperature_Internal() > self.getSetpoint():
+            powerFactor = 0.5
+        return powerFactor
+
     def CoolingOrHeating(self, room):
         if self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.HEATING:
             if self.getTemperature_Internal() >= self.getSetpoint() + self.tempDiff:
@@ -162,10 +168,11 @@ class HVAC:
             elif self.getHVACMode() == self.HVAC_Mode.COOLING:
                 if self.getTemperature_Internal() >= self.getSetpoint():
                     self.TurnOn(self.HVAC_Mode.COOLING)
+        powerFactor = self.changePower()
         if self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.HEATING:
             deltaT = self.ChangeTemp(room)
             self.setTemperature_Internal(self.getTemperature_Internal() + deltaT)
-            print(f"deltaT : {deltaT}")
+            #print(f"deltaT : {deltaT}")
         elif self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.COOLING:
             deltaT = self.ChangeTemp(room)
             self.setTemperature_Internal(self.getTemperature_Internal() - deltaT)
@@ -215,21 +222,12 @@ class HVAC:
                 if parametrized_array[position][3] == "OFF":
                         self.TurnOff()
 
-    def adjust_power_based_on_temp(self):
-        temp_diff = abs(self.getTemperature_Internal() - self.getSetpoint())
-        if temp_diff < 1:
-            self.Power_Watt = self.BTUs * 0.1 * 0.29307107  # Reduce power to 10% when close to setpoint
-        elif temp_diff < 2:
-            self.Power_Watt = self.BTUs * 0.5 * 0.29307107  # Reduce power to 50% when moderately close to setpoint
-        else:
-            self.Power_Watt = self.BTUs * 0.29307107  # Full power when far from setpoint
-
     def ChangeTemp(self, room: Room):
         # Calculate temperature difference
         temp_diff = self.getTemperature_Internal() - Weather.degrees
 
         # Energy supplied by the HVAC system
-        Q_In = self.Power_Watt * self.efficiency 
+        Q_In = (self.Power_Watt * self.changePower()) * self.efficiency 
 
         # Energy lost to the environment
         Q_Out = room.heatLossCoefficient * room.wallsArea * temp_diff 

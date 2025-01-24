@@ -121,7 +121,6 @@ def main():
 
         #control variables
         deltaTemp = 0.002 #quanto cambia la temperatura interna in deltaT
-        setpoint = 22
         temperature = 25
         room.setTemperature(temperature)
         hvac.setTemperature_Internal(temperature)
@@ -181,7 +180,6 @@ def main():
                 timerAux = time.time() - consumtionTimer
                 consumtionTimer = time.time()
                 hvac.CoolingOrHeating(room)
-                
                 loseTemp(weather,hvac)
                 #print(f"temperature : {str(hvac.getTemperature_Internal())} °C")
                 df = pd.concat([df, pd.DataFrame([[hvac.getTemperature_Internal(), hvac.getSetpoint(), hvac.getPowerConsumption(), startTime, hvac.getHVACMode(),weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp','Mode',"Ambient_Temperature"])], ignore_index=True)
@@ -260,28 +258,6 @@ def plot_powerConsumption(df):
     plt.show()
 
 
-
-def drawPowerConsumptionGraph(watts):
-    plt.figure(figsize=(8,4))
-    plt.plot(watts, label='Power Consumption', color='green')
-    plt.xlabel('Time (GMT)')
-    plt.ylabel('Watts')
-    plt.title('Power Consumption Over Time')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-
-def drawTemperatureGraph(temperatures,setpoints):
-    plt.figure(figsize=(8,4))
-    plt.plot(temperatures, label='Temperature',color='red')
-    plt.plot(setpoints, label='Setpoint',color='blue')
-    plt.xlabel('Time')
-    plt.ylabel('Temperature')
-    plt.title('Temperature and setpoint')
-    plt.legend()
-    plt.grid(True)
-    plt.show()
 
 def convert_to_gmt(date_string, date_format='%Y-%m-%d %H:%M:%S'):
             local = datetime.datetime.strptime(date_string, date_format)
