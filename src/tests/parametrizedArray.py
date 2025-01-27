@@ -9,10 +9,10 @@ Starting from a predefined TimeStamp (GMT format) [exe: 2025-01-01 00:00:00]
 
 # Define the parameterized array
 parametrized_array = np.array([
-    ['2025-01-01 00:00:00', 28.0, 'HEATING',"ON"],
-    ['2025-01-01 01:00:00', 19.0, 'HEATING',"ON"],
-    ['2025-01-01 02:00:00', 22.0, 'HEATING',"ON"],
-    ['2025-01-01 03:00:00', 21.0, 'HEATING',"OFF"],
+    ['2025-01-01 00:00:00', 19.0, 'COOLING',"ON"],
+    ['2025-01-01 01:00:00', 22.0, 'COOLING',"ON"],
+    ['2025-01-01 02:00:00', 20.0, 'COOLING',"ON"],
+    ['2025-01-01 03:00:00', 27.0, 'HEATING',"ON"],
     ['2025-01-01 04:00:00', 30.0, 'COOLING',"OFF"],
     #['2025-01-01 02:30:00', 21.0, 'HEATING',"OFF"]
 ], dtype=object)

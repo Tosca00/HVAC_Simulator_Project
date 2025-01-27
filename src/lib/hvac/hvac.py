@@ -150,7 +150,9 @@ class HVAC:
 
     def changePower(self):
         powerFactor = 1
-        if self.getTemperature_Internal() > self.getSetpoint():
+        if self.getTemperature_Internal() > self.getSetpoint() and self.getHVACMode() == self.HVAC_Mode.HEATING:
+            powerFactor = 0.5
+        elif self.getTemperature_Internal() < self.getSetpoint() and self.getHVACMode() == self.HVAC_Mode.COOLING:
             powerFactor = 0.5
         return powerFactor
 

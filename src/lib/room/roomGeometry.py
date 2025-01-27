@@ -1,6 +1,14 @@
 import random
 from ..weather.weather import Weather
 import math
+
+class Lamp:
+    wattage = 0
+
+    def __init__(self,wattage):
+        self.wattage = wattage
+
+
 class Room:
     height = 0
     width = 0
@@ -10,6 +18,8 @@ class Room:
     heatCapacity = 0
     heatLossCoefficient = 0
     wallsArea = 0
+    people = 0
+    lamps = []
 
     def __init__(self, height : float, width: float, length:float, temperature,heatLossCoefficient, weather : Weather):
         self.height = height
@@ -29,7 +39,24 @@ class Room:
 
     def hCapacity(self,weather : Weather):
         return self.volume * weather.specific_heat * weather.rho
+    
+    def transmissionLoad(self, weather: Weather, hvac):
+        return self.heatLossCoefficient * self.wallsArea * (hvac.getTemperature_Internal() - weather.degrees)
+    
+    def addPerson(self):
+        self.people += 1
+    def RemovePerson(self):
+        if(self.people > 0):
+            self.people -= 1
+        else:
+            print("Room is already empty")
 
+    def InternalLoadPeople(self,time):
+        personaHeatAverage = 105 #W
+        return self.people * time * personaHeatAverage
+    def InternalLoadLight(self,time):
+        return sum([lamp.wattage for lamp in self.lamps]) * time
+        
     
 #per il momento la perdita di temperatura è costante e converge su quella ambiente
 def loseTemp(weather: Weather, hvac):

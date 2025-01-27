@@ -45,6 +45,7 @@ import threading
 from src.lib.hvac.hvac import HVAC
 from src.lib.room.roomGeometry import *
 from src.lib.weather import Weather
+from src.lib.agent.Agent import *
 import tkinter as tk
 from tkinter import simpledialog
 from tkinter import messagebox
@@ -115,19 +116,17 @@ def main():
         #basic variables
         hvac = HVAC()
         time_refresh = 1 #seconds
-
-        weather = Weather(20,50,80,70,1.225,)
+        weather = Weather(25,50,80,70,1.225,)
         room = Room(4,3,5,25,0.2,weather)
 
         #control variables
         deltaTemp = 0.002 #quanto cambia la temperatura interna in deltaT
-        temperature = 25
-        room.setTemperature(temperature)
-        hvac.setTemperature_Internal(temperature)
+        
+        hvac.setTemperature_Internal(room.temperature)
         hvac.setDeltaTemp(deltaTemp)
 
-        startTimer = round(time.time(),0)
-        consumtionTimer = time.time()
+        #startTimer = round(time.time(),0)
+        #consumtionTimer = time.time()
 
         #sp_thread = threading.Thread(target=modify_setpoint, args=(hvac,), daemon=True)
         #sp_thread.start()
@@ -162,7 +161,10 @@ def main():
             pass
         
         '''
-        
+        agent = Agent()
+        agent.classes_dict['HVAC'] = hvac
+        agent.classes_dict['Room'] = room
+        agent.classes_dict['Weather'] = weather
         startTime = datetime.datetime.strptime(parametrized_array[0][0], '%Y-%m-%d %H:%M:%S')
         hvac.setHvac(parametrized_array,0)
         try:
@@ -177,10 +179,9 @@ def main():
                     print(f"found date : {i} of {len(parametrized_array)-1}")
                     hvac.setHvac(parametrized_array,i)
                     i += 1
-                timerAux = time.time() - consumtionTimer
+                #timerAux = time.time() - consumtionTimer
                 consumtionTimer = time.time()
-                hvac.CoolingOrHeating(room)
-                loseTemp(weather,hvac)
+                agent.tick()
                 #print(f"temperature : {str(hvac.getTemperature_Internal())} °C")
                 df = pd.concat([df, pd.DataFrame([[hvac.getTemperature_Internal(), hvac.getSetpoint(), hvac.getPowerConsumption(), startTime, hvac.getHVACMode(),weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp','Mode',"Ambient_Temperature"])], ignore_index=True)
                 startTime += datetime.timedelta(seconds=1)
