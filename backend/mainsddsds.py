@@ -42,20 +42,20 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import threading
-from src.lib.hvac.hvac import HVAC
-from src.lib.room.roomGeometry import *
-from src.lib.weather import Weather
-from src.lib.agent.Agent import *
+from backend.src.lib.hvac.hvac import HVAC
+from backend.src.lib.room.roomGeometry import *
+from backend.src.lib.weather import Weather
+from backend.src.lib.agent.Agent import *
 import tkinter as tk
 from tkinter import simpledialog
 from tkinter import messagebox
 import pytz
 import datetime, timedelta
-from src.data import *
+from backend.src.data import *
 import pandas as pd
 import seaborn as sns
 import matplotlib.dates as mdates
-from src.tests.parametrizedArray import *
+from backend.src.tests.parametrizedArray import *
 
 
 #aux variables for debugging 
@@ -195,7 +195,7 @@ def main():
         print(f"found {i} dates.")
         # Create and save DataFrame after the simulation loop ends
         #print(f"total time elapsed : {str(time_counter)} seconds")
-        df.to_csv('src/data.csv', index=False)
+        df.to_csv('backend/src/data.csv', index=False)
         print(f"startTime valude : {parametrized_array[len(parametrized_array)-1][0]}")
         #print(f"room temperature : {str(room.temperature)} °C")
 

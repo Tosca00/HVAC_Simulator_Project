@@ -1,7 +1,6 @@
 from enum import Enum
-from src.lib.hvac.hvac_exception import HVACException
+from backend.src.lib.hvac.hvac_exception import HVACException
 from ..weather.weather import Weather
-import random
 from ..room.roomGeometry import *
 class HVAC:
 

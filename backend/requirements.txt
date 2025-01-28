@@ -1,0 +1,10 @@
+fastapi==0.115.7
+matplotlib==3.10.0
+numpy==2.2.2
+pandas==2.2.3
+pytz==2024.2
+seaborn==0.13.2
+timedelta==2020.12.3
+redis==3.5.3
+types-redis==3.5.3
+uvicorn==0.15.0
