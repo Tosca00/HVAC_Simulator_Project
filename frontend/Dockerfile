@@ -5,16 +5,15 @@ FROM node:18
 WORKDIR /app
 
 # Copy package.json and install dependencies
-COPY package.json .
+COPY /app/package.json .
+RUN npm cache clean --force
+RUN npm install -g @angular/cli
 RUN npm install
 
 # Copy the application files
-COPY . .
-# Build the React app
-RUN npm run build
-
-RUN npm install -g serve
+COPY . /app/
 EXPOSE 3000
 
 # Command to run the application
-CMD ["serve", "-s", "build", "-l", "3000"]
+RUN chmod +x start.sh
+CMD ["npm", "start"]
