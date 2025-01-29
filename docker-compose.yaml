@@ -2,13 +2,13 @@ services:
   backend:
     build: ./backend
     ports:
-      - "8080:8000"
+      - "8001:8000"
     volumes:
       - ./backend:/app
   frontend:
-    build: ./frontend
+    build: ./frontend/hvac-frontend
     ports:
-      - "3000:3000"
+      - "8080:3000"
     volumes:
       - ./frontend:/app
     depends_on:

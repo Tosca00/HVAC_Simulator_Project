@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from backend.simulation import Simulation
+#from .simulation import Simulation
 
 app = FastAPI()
 
@@ -11,4 +11,4 @@ def read_root():
 def run_simulation():
     #sim_instance = Simulation()
     #result = sim_instance.run_simulation_parameterized()
-    return {"message": "hello world"}
+    return {"message": "testing"}
