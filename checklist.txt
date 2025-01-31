@@ -1,3 +1,7 @@
 lasciare weather basica al momento fino a implementazione di un modello termico verosimile
 
 TODO:
+
+backend : offrire il servizio su una porta (confastapi)
+
+frontend : eseguire chiamata http su porta backend e memorizzare il risultato

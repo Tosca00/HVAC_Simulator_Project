@@ -1,0 +1,8 @@
+<div>
+    <mat-form-field>
+        <mat-label>Temperature</mat-label>
+        <input matInput [(ngModel)]="temperature">
+        <mat-error *ngIf="!isInteger(temperature)">Please enter a valid integer</mat-error>
+    </mat-form-field>
+    <button mat-raised-button (click)="writeTemp()">click here</button>
+</div>
