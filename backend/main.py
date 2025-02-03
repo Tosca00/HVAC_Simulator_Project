@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import json
 #from .simulation import Simulation
 
 app = FastAPI()
@@ -11,15 +12,18 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/")
-def read_root():
-    return {"message": "HVAC Sim API"}
+@app.post("/")
+async def save_data(data: dict):
+    with open("data.json", "w") as f:
+        json.dump(data, f)
+    return {"message": "Data saved successfully"}
+
 
 @app.get("/simulate")
 def run_simulation():

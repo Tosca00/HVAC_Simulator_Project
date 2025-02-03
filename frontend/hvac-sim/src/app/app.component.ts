@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
-import { OnInit } from '@angular/core';
-import { HttpService } from '../services/http.service';
+import { Component, ViewContainerRef } from '@angular/core';
+import $ from 'jquery';
+import { Renderer2 } from '@angular/core';
+import { UserFormComponent } from './user-form/user-form.component';
 
 @Component({
   selector: 'app-root',
@@ -8,16 +9,14 @@ import { HttpService } from '../services/http.service';
   standalone: false,
   styleUrl: './app.component.css'
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   title = 'hvac-sim';
- 
+  constructor(private vrc : ViewContainerRef) {}
 
-  constructor(private http: HttpService) {
-    console.log('AppComponent constructor');
+  AddFormRow() {
+    this.vrc.createComponent(UserFormComponent);
   }
-
-  async ngOnInit() {
-    const FormResponce = await this.http.getForm();
-    console.log(FormResponce);
+  RemoveFormRow() {
+    this.vrc.remove();
   }
 }

@@ -1,8 +1,22 @@
 <div>
     <mat-form-field>
-        <mat-label>Temperature</mat-label>
-        <input matInput [(ngModel)]="temperature">
-        <mat-error *ngIf="!isInteger(temperature)">Please enter a valid integer</mat-error>
+        <mat-label>Date</mat-label>
+            <input matInput [(ngModel)]="date" type="datetime-local" step="1">
+            <mat-error *ngIf="!isInteger(temperature)">Please enter a valid integer</mat-error>
     </mat-form-field>
-    <button mat-raised-button (click)="writeTemp()">click here</button>
+    <mat-form-field>
+        <mat-label>Setpoint</mat-label>
+            <input matInput [(ngModel)]="temperature">
+            <mat-error *ngIf="!isInteger(temperature)">Please enter a valid integer</mat-error>
+    </mat-form-field>
+    <mat-form-field>
+        <mat-label>Mode</mat-label>
+        <mat-select [(ngModel)]="selectedMode">
+            <mat-option value="COOLING">cool</mat-option>
+            <mat-option value="HEATING">heat</mat-option>
+            <mat-option value="NO_MODE">off</mat-option>
+        </mat-select>
+    </mat-form-field>
+    <mat-checkbox [(ngModel)]="isOn">On</mat-checkbox>
+    <button mat-raised-button (click)="createFormResponse()">click for Debug</button>
 </div>

@@ -8,9 +8,9 @@ WORKDIR /app
 COPY package*.json ./
 #run clean install of dependencies
 RUN npm ci
-
+#RUN npm install jquery --save
+#RUN npm install @types/jquery --save
 #RUN npm cache clean --force
-
 RUN npm install -g @angular/cli
 
 # Copy the application files

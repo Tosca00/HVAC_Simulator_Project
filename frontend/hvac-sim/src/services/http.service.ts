@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import axios from 'axios';
+import { Mode } from 'fs';
 
 export const httpService = axios.create({
   baseURL: 'http://localhost:8001'
@@ -12,8 +13,7 @@ export class HttpService {
 
   constructor() { }
 
-  async getForm() {
-    const httpResponce = await httpService.get<any>('/');
-    return httpResponce.data;
+  async createFormResponse(formResponse: {date: string, temperature: number, selectedMode: Mode[], isOn: boolean}) {
+    return await httpService.post('/', formResponse);
   }
 }
