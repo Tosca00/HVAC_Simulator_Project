@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { OnInit } from '@angular/core';
 import { HttpService } from '../../services/http.service';
-enum Mode {
+export enum Mode {
   COOL = 'COOLING',
   HEAT = 'HEATING',
   NO_MODE = 'NO_MODE'
@@ -30,29 +30,9 @@ export class UserFormComponent implements OnInit {
   {
     console.log('UserFormComponent ngOnInit');
   }
-
-  async createFormResponse()
-  {
-    const formResponse = {
-      date: this.date.replace('T',' '),
-      temperature: this.temperature,
-      selectedMode: this.selectedMode,
-      isOn: this.isOn
-    };
-
-    const result = await this.http.createFormResponse(formResponse);
-    console.log(result.data);
-  }
+  
 
   isInteger(value: number): boolean {
     return Number.isInteger(value);
-  }
-
-  writeTemp()
-  {
-    console.log(this.date);
-    console.log(this.temperature);
-    console.log(this.selectedMode);
-    console.log(this.isOn);
   }
 }

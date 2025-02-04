@@ -10,7 +10,6 @@ import { AppComponent } from './app.component';
 import { UserFormComponent } from './user-form/user-form.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { MatOptionModule } from '@angular/material/core';
-import * as $ from 'jquery';
 
 @NgModule({
   declarations: [

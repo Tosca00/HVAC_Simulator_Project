@@ -1,1 +1,1 @@
-{"date": "2025-02-03 16:25:04", "temperature": 0, "selectedMode": ["COOLING", "HEATING", "NO_MODE"], "isOn": false}
+{"responses": [{"date": "2025-02-04 15:52:52", "temperature": 0, "selectedMode": "HEATING", "isOn": "ON"}, {"date": "2025-02-04 15:52:52", "temperature": 0, "selectedMode": "COOLING", "isOn": "OFF"}, {"date": "2025-02-04 15:52:52", "temperature": "56", "selectedMode": "NO_MODE", "isOn": "ON"}, {"date": "2025-02-04 15:52:52", "temperature": "67", "selectedMode": "NO_MODE", "isOn": "OFF"}]}

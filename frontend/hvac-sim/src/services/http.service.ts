@@ -13,7 +13,14 @@ export class HttpService {
 
   constructor() { }
 
-  async createFormResponse(formResponse: {date: string, temperature: number, selectedMode: Mode[], isOn: boolean}) {
-    return await httpService.post('/', formResponse);
+  async createFormResponse(formResponses: {
+    responses: {
+        date: string;
+        temperature: number;
+        selectedMode: Mode;
+        isOn: string;
+    }[];
+}) {
+    return await httpService.post('/', formResponses);
   }
 }

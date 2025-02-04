@@ -1,7 +1,7 @@
-lasciare weather basica al momento fino a implementazione di un modello termico verosimile
+note : lasciare weather basica al momento fino a implementazione di un modello termico verosimile
 
 TODO:
 
-backend : offrire il servizio su una porta (confastapi)
+backend : riorganizzare le funzioni per fare si che aspettino un json in input (o salvare i dati da un file json)
 
-frontend : eseguire chiamata http su porta backend e memorizzare il risultato
+frontend : eseguire chiamata http su porta backend in post ai corretti URL

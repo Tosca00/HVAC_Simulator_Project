@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import json
+from src.tests.parametrizedArray import setupArrFromJSON,printArr
 #from .simulation import Simulation
 
 app = FastAPI()
@@ -22,11 +23,11 @@ app.add_middleware(
 async def save_data(data: dict):
     with open("data.json", "w") as f:
         json.dump(data, f)
+    param_arr = setupArrFromJSON("data.json")
     return {"message": "Data saved successfully"}
+
 
 
 @app.get("/simulate")
 def run_simulation():
-    #sim_instance = Simulation()
-    #result = sim_instance.run_simulation_parameterized()
-    return {"message": "testing"}
+    setupArrFromJSON("data.json")

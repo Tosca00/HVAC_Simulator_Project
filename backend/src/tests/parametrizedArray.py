@@ -1,4 +1,5 @@
 import numpy as np
+import json
 
 '''
 This test use case objective is to use a parametrized array [Timestamp, Temperature, Setpoint, Mode]
@@ -8,7 +9,7 @@ Starting from a predefined TimeStamp (GMT format) [exe: 2025-01-01 00:00:00]
 '''
 
 # Define the parameterized array
-parametrized_array = np.array([
+parametrized_array_test = np.array([
     ['2025-01-01 00:00:00', 19.0, 'COOLING',"ON"],
     ['2025-01-01 01:00:00', 22.0, 'COOLING',"ON"],
     ['2025-01-01 02:00:00', 20.0, 'COOLING',"ON"],
@@ -39,4 +40,27 @@ def check_array_params(parametrized_array):
             raise ValueError("Dates are in wrong order, all dates must be in ascending order")
         previous_date = parametrized_array[i][0]
         
+
+
+def printArr(parameterized_array: np.array):
+    for array in parameterized_array:
+        print(array)
+
+def setupArrFromJSON(json_file_path):
+    with open(json_file_path, 'r') as file:
+        data = json.load(file)
+    responses = data.get('responses', [])
+    parametrized_array = np.empty((0, 4), dtype=object)
+    for response in responses:
+        date = response.get('date')
+        temperature = response.get('temperature')
+        selectedMode = response.get('selectedMode')
+        isOn = response.get('isOn')
+        parametrized_array = np.append(parametrized_array, [[date, temperature, selectedMode, isOn]], axis=0)
+    
+    with open('res.txt', 'w'):
+        np.savetxt('parametrized_array.txt', parametrized_array, fmt='%s', delimiter=',')
+    
+    return parametrized_array
+    
         
