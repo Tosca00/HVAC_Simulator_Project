@@ -12,13 +12,16 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { MatOptionModule } from '@angular/material/core';
 import { WeatherRoomComponent } from './weather-room/weather-room.component';
 import { ChartComponentComponent } from './chart-component/chart-component.component';
+import { RemoteComponent } from './remote/remote.component';
+
 
 @NgModule({
   declarations: [
     AppComponent,
     UserFormComponent,
     WeatherRoomComponent,
-    ChartComponentComponent
+    ChartComponentComponent,
+    RemoteComponent
   ],
   imports: [
     BrowserModule,

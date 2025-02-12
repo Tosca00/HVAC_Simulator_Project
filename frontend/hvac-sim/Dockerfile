@@ -12,8 +12,7 @@ RUN npm ci
 #RUN npm install @types/jquery --save
 #RUN npm cache clean --force
 RUN npm install -g @angular/cli
-RUN npm install @swimlane/ngx-charts d3
-RUN npm install papaparse
+RUN npm install chart.js ng2-charts papaparse
 # Copy the application files
 COPY . .
 # Build the application

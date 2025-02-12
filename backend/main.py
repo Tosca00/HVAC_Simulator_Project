@@ -41,6 +41,12 @@ def initializeRoom():
     room = Room(roomData["height"], roomData["width"], roomData["length"], heatLossCoefficient, weather)
     return room
 
+def initializeSimType():
+    with open("data.json", "r") as f:
+        data = json.load(f)
+    sim_type = data.get("simulationType")
+    return sim_type
+
 @app.post("/")
 async def save_data(data: dict):
     with open("data.json", "w") as f:
@@ -48,8 +54,10 @@ async def save_data(data: dict):
     global param_arr
     global weather
     global room
+    global sim_type
     weather = initializeWeather()
     room = initializeRoom()
+    sim_type = initializeSimType()
     param_arr = setupArrFromJSON("data.json")
     return {"message": "Data saved successfully"}
 
@@ -61,8 +69,14 @@ def run_simulation():
     sim = Simulation()
     initializeRoom()
     initializeWeather()
-    sim.run_simulation_parameterized(param_arr, hvac, room, weather)
-    
+    #sim.run_simulation_parameterized(param_arr, hvac, room, weather)
+    if sim_type == 0:
+        #sim.run_simulation_parameterized(param_arr, hvac, room, weather)
+        return {"message": "parameterized"}
+    else:
+        #sim.run_simulation_realtime(hvac, room, weather)
+        return {"message": "realtime"}
+
     # Read the content of the CSV file
     csv_content = []
     with open("./src/data.csv", "r") as csvfile:

@@ -2,24 +2,24 @@
     <h2>Room Information</h2>
     <mat-form-field>
         <mat-label>height</mat-label>
-            <input matInput [(ngModel)]="height" type="number">
+            <input matInput [(ngModel)]="height" type="number" min="1">
             <mat-error *ngIf="!isIntegerOrFloat(height)">Please enter valid input</mat-error>
     </mat-form-field>
     <mat-form-field>
         <mat-label>width</mat-label>
-            <input matInput [(ngModel)]="width" type="number">
+            <input matInput [(ngModel)]="width" type="number" min="1">
             <mat-error *ngIf="!isIntegerOrFloat(width)">Please enter valid input</mat-error>
     </mat-form-field>
     <mat-form-field>
         <mat-label>length</mat-label>
-            <input matInput [(ngModel)]="length" type="number">
+            <input matInput [(ngModel)]="length" type="number" min="1">
             <mat-error *ngIf="!isIntegerOrFloat(length)">Please enter valid input</mat-error>
     </mat-form-field>
 
     <h2>Weather Information</h2>
     <mat-form-field>
         <mat-label>Temperature</mat-label>
-            <input matInput [(ngModel)]="weatherTemperature" type="number">
+            <input matInput [(ngModel)]="weatherTemperature" type="number" min="1">
             <mat-error *ngIf="!isIntegerOrFloat(weatherTemperature)">Please enter valid input</mat-error>
     </mat-form-field>
 </div>

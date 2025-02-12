@@ -1,11 +1,6 @@
-import { Component, ViewContainerRef, ViewChild } from '@angular/core';
-import { UserFormComponent } from './user-form/user-form.component';
-import { WeatherRoomComponent } from './weather-room/weather-room.component';
-import { OnInit } from '@angular/core';
-import { HttpService } from '../services/http.service';
-import { Mode } from './user-form/user-form.component';
-
-
+import { Component, ViewChild, ViewContainerRef,ComponentFactoryResolver, OnInit} from '@angular/core';
+import { RemoteComponent, SIM_TYPE } from './remote/remote.component';
+import { Injector } from '@angular/core';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -14,54 +9,48 @@ import { Mode } from './user-form/user-form.component';
 })
 export class AppComponent implements OnInit{
   title = 'hvac-sim';
-  userFormComponents : Array<UserFormComponent> = [];
-
-  @ViewChild(WeatherRoomComponent) weatherRoom!: WeatherRoomComponent;
-
-  ngAfterViewInit() {
-    console.log('WeatherRoomComponent ngAfterViewInit');
-  }
-
-  constructor(private vrc_userForm : ViewContainerRef, private vrc_weatherRoom: ViewContainerRef, private http: HttpService) {}
+  
+  @ViewChild(RemoteComponent) remote!: RemoteComponent;
+  
+  constructor(private vrc_remote : ViewContainerRef,private resolver: ComponentFactoryResolver, private injector: Injector) 
+  {}
 
   ngOnInit() {
     console.log('AppComponent ngOnInit');
   }
 
-  AddFormRow() {
-    const userComponent = this.vrc_userForm.createComponent(UserFormComponent);
-    this.userFormComponents.push(userComponent.instance);
-  }
-  RemoveFormRow() {
-    this.vrc_userForm.remove();
-    this.userFormComponents.pop();
-  }
-
-  async createFormResponse() {
-    const formResponses = {
-      responses: this.userFormComponents.map(component => ({
-      date: component.date.slice(0, 19).replace('T', ' '),
-      temperature: component.temperature,
-      selectedMode: component.modes,
-      isOn: component.isOn? "ON" : "OFF"
-      })),
-      weatherTemperature: this.weatherRoom.weatherTemperature,
-      room: {
-        height: this.weatherRoom.height,
-        width: this.weatherRoom.width,
-        length: this.weatherRoom.length
-      }
-    };
-
-    try {
-      const result = await this.http.createFormResponse(formResponses);
-      console.log(result.data);
-      const simulationResult = await this.http.callSimulation();
-      console.log(simulationResult.data);
-    } catch (error) {
-      console.error('Error submitting form response:', error);
+  showParamSim() {
+    if(this.vrc_remote.length > 0) {
+      this.vrc_remote.clear();
     }
+    const factory = this.resolver.resolveComponentFactory(RemoteComponent);
+    const injector = Injector.create({providers: [{provide: SIM_TYPE, useValue: 0}]});
+    this.vrc_remote.createComponent(factory, 0, injector);
 
-    console.log(formResponses);
+    const otherButton = document.getElementById('pr_sim');
+    if(otherButton) {
+      if (otherButton.style.visibility === 'visible') {
+        otherButton.style.visibility = 'hidden';
+      } else {
+        otherButton.style.display = 'visible';
+      }
+    }
+  }
+
+  showRealTimeSim() {
+    if(this.vrc_remote.length > 0) {
+      this.vrc_remote.clear();
+    }
+    const factory = this.resolver.resolveComponentFactory(RemoteComponent);
+    const injector = Injector.create({providers: [{provide: SIM_TYPE, useValue: 1}]});
+    this.vrc_remote.createComponent(factory, 0, injector);
+    const otherButton = document.getElementById('rt_sim');
+    if(otherButton) {
+      if (otherButton.style.visibility === 'visible') {
+        otherButton.style.visibility = 'hidden';
+      } else {
+        otherButton.style.display = 'visible';
+      }
+    }
   }
 }

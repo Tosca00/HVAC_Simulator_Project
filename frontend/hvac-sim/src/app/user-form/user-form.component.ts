@@ -1,8 +1,6 @@
 import { Component } from '@angular/core';
 import { OnInit } from '@angular/core';
 import { HttpService } from '../../services/http.service';
-import { Data } from '@angular/router';
-import { DatePipe } from '@angular/common';
 export enum Mode {
   COOL = 'COOLING',
   HEAT = 'HEATING',

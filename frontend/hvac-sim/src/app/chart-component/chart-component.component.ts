@@ -22,13 +22,11 @@ export class ChartComponentComponent implements OnInit {
 
   constructor(private http: HttpService ) { console.log('ChartComponentComponent constructor'); }
 
-  onFileSelect(event: any) {
-    const file = event.target.files[0];
-    if(file)
-    {
-      console.log(file);
-    }
-
+  dataForGraph(csv_file: any) {
+    console.log('dataForGraph');
+    this.csvData = csv_file;
+    this.chartLabels = this.csvData.map(data => data.Setpoint);
+    this.chartData = this.csvData.map(data => data.Temperature);
   }
 
 }
