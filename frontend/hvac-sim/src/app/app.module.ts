@@ -10,11 +10,15 @@ import { AppComponent } from './app.component';
 import { UserFormComponent } from './user-form/user-form.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { MatOptionModule } from '@angular/material/core';
+import { WeatherRoomComponent } from './weather-room/weather-room.component';
+import { ChartComponentComponent } from './chart-component/chart-component.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    UserFormComponent
+    UserFormComponent,
+    WeatherRoomComponent,
+    ChartComponentComponent
   ],
   imports: [
     BrowserModule,

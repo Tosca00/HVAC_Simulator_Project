@@ -13,7 +13,7 @@ class Room:
     height = 0
     width = 0
     length = 0
-    Temperature = 0
+    temperature = 0
     volume = 0
     heatCapacity = 0
     heatLossCoefficient = 0
@@ -30,6 +30,16 @@ class Room:
         self.volume = self.calculateVolume()
         self.heatCapacity = self.hCapacity(weather)
         self.wallsArea = 2 * (self.height * self.width + self.height * self.length + self.width * self.length)
+
+    def __init__(self, height : float, width: float, length:float,heatLossCoefficient: float,weather : Weather, temperature = 0):
+        self.height = height
+        self.width = width
+        self.length = length
+        self.heatLossCoefficient = heatLossCoefficient
+        self.volume = self.calculateVolume()
+        self.heatCapacity = self.hCapacity(weather)
+        self.wallsArea = 2 * (self.height * self.width + self.height * self.length + self.width * self.length)
+
 
     def setTemperature(self, temperature):
         self.temperature = temperature

@@ -1,12 +1,12 @@
 <div>
     <mat-form-field>
         <mat-label>Date</mat-label>
-            <input matInput [(ngModel)]="date" type="datetime-local" step="1">
+            <input matInput [(ngModel)]="date" type="datetime-local" step="1" required>
             <mat-error *ngIf="!isInteger(temperature)">Please enter a valid integer</mat-error>
     </mat-form-field>
     <mat-form-field>
         <mat-label>Setpoint</mat-label>
-            <input matInput [(ngModel)]="temperature">
+            <input matInput [(ngModel)]="temperature" type="number">
             <mat-error *ngIf="!isInteger(temperature)">Please enter a valid integer</mat-error>
     </mat-form-field>
     <mat-form-field>

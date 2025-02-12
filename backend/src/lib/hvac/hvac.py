@@ -1,7 +1,8 @@
 from enum import Enum
-from backend.src.lib.hvac.hvac_exception import HVACException
+from src.lib.hvac.hvac_exception import HVACException
 from ..weather.weather import Weather
 from ..room.roomGeometry import *
+import numpy as np
 class HVAC:
 
     class POWER_Mode:
@@ -173,7 +174,6 @@ class HVAC:
         if self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.HEATING:
             deltaT = self.ChangeTemp(room)
             self.setTemperature_Internal(self.getTemperature_Internal() + deltaT)
-            #print(f"deltaT : {deltaT}")
         elif self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.COOLING:
             deltaT = self.ChangeTemp(room)
             self.setTemperature_Internal(self.getTemperature_Internal() - deltaT)
@@ -209,19 +209,20 @@ class HVAC:
             elif self.getHVACMode() == self.HVAC_Mode.COOLING:
                 self.setTemperature_Internal(self.getTemperature_Internal() - temp_change)
 
-    def setHvac(self,parametrized_array,position):
-                if position > len(parametrized_array):
-                    raise IndexError("Position out of bound")
-                self.setSetpoint(parametrized_array[position][1])
-                match parametrized_array[position][2]:
-                    case "HEATING":
-                        self.setHVACMode(self.HVAC_Mode.HEATING)
-                    case "COOLING":
-                        self.setHVACMode(self.HVAC_Mode.COOLING)
-                if parametrized_array[position][3] == "ON" and self.getHVAC_State() == self.HVAC_State.OFF:
-                        self.TurnOn(self.getHVACMode())
-                if parametrized_array[position][3] == "OFF":
-                        self.TurnOff()
+    def setHvac(self,parametrized_array:np.array,position):
+        if position > len(parametrized_array):
+            raise IndexError("Position out of bound")
+        self.setSetpoint(parametrized_array[position][1])
+        if parametrized_array[position][2] == "HEATING":
+            self.setHVACMode(self.HVAC_Mode.HEATING)
+        elif parametrized_array[position][2] == "COOLING":
+            self.setHVACMode(self.HVAC_Mode.COOLING)
+        else:
+            self.setHVACMode(self.HVAC_Mode.NO_MODE)
+        if parametrized_array[position][3] == "ON" and self.getHVAC_State() == self.HVAC_State.OFF:
+                self.TurnOn(self.getHVACMode())
+        if parametrized_array[position][3] == "OFF":
+                self.TurnOff()
 
     def ChangeTemp(self, room: Room):
         # Calculate temperature difference
@@ -235,6 +236,10 @@ class HVAC:
 
         # Net energy change
         Q_eff = Q_In - Q_Out
+
+        print(f"walls area : {room.wallsArea}")
+        print(f"room heat loss coefficient : {room.heatLossCoefficient}")
+        print(f"room heat capacity : {room.heatCapacity}")
 
         # Effective temperature change
         delta_temp_effective = Q_eff / room.heatCapacity

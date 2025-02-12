@@ -28,6 +28,7 @@ def check_array_params(parametrized_array):
         if not isinstance(parametrized_array[i][0], str):
             raise ValueError("The first column must be a date string in valid iso format")
         if not isinstance(parametrized_array[i][1], (int, float)):
+            print(f"Element type: {type(parametrized_array[i][1])}")
             raise ValueError("The second column must be a number, either int or float, representing the setpoint")
         if not isinstance(parametrized_array[i][2], str):
             if parametrized_array[i][2] != "NO_MODE" and parametrized_array[i][2] != "HEATING" and parametrized_array[i][2] != "COOLING":
@@ -49,14 +50,15 @@ def printArr(parameterized_array: np.array):
 def setupArrFromJSON(json_file_path):
     with open(json_file_path, 'r') as file:
         data = json.load(file)
-    responses = data.get('responses', [])
-    parametrized_array = np.empty((0, 4), dtype=object)
+    responses = data["responses"]
+    parametrized_array = []
     for response in responses:
-        date = response.get('date')
-        temperature = response.get('temperature')
-        selectedMode = response.get('selectedMode')
-        isOn = response.get('isOn')
-        parametrized_array = np.append(parametrized_array, [[date, temperature, selectedMode, isOn]], axis=0)
+        date = response["date"]
+        temperature = int(response["temperature"])
+        selectedMode = response["selectedMode"]
+        isOn = response["isOn"]
+        parametrized_array.append([date, temperature, selectedMode, isOn])
+
     
     with open('res.txt', 'w'):
         np.savetxt('parametrized_array.txt', parametrized_array, fmt='%s', delimiter=',')

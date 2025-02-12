@@ -20,7 +20,11 @@ export class HttpService {
         selectedMode: Mode;
         isOn: string;
     }[];
-}) {
+  }) {
     return await httpService.post('/', formResponses);
+  }
+
+  async callSimulation() {
+    return await httpService.post('/simulate');
   }
 }

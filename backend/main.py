@@ -2,14 +2,21 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import json
 from src.tests.parametrizedArray import setupArrFromJSON,printArr
-#from .simulation import Simulation
+import numpy as np
+from src.lib.room.roomGeometry import Room
+from src.lib.weather.weather import Weather
+from src.lib.hvac.hvac import HVAC
+from simulation import Simulation
+import csv
 
 app = FastAPI()
 
-origins = [
-    "http://localhost",
-    "http://localhost:8080",
-]
+#Define the parameterized array
+#param_arr: np.array = np.empty((0, 4), dtype=object)
+
+
+
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,15 +26,48 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+def initializeWeather():
+    with open("data.json", "r") as f:
+        data = json.load(f)
+    weather = Weather(data["weatherTemperature"])
+    return weather
+
+def initializeRoom():
+    heatLossCoefficient = 0.8
+    with open("data.json", "r") as f:
+        data = json.load(f)
+    roomData = data.get("room")
+    room = Room(roomData["height"], roomData["width"], roomData["length"], heatLossCoefficient, weather)
+    return room
+
 @app.post("/")
 async def save_data(data: dict):
     with open("data.json", "w") as f:
         json.dump(data, f)
+    global param_arr
+    global weather
+    global room
+    weather = initializeWeather()
+    room = initializeRoom()
     param_arr = setupArrFromJSON("data.json")
     return {"message": "Data saved successfully"}
 
 
 
-@app.get("/simulate")
+@app.post("/simulate")
 def run_simulation():
-    setupArrFromJSON("data.json")
+    hvac = HVAC()
+    sim = Simulation()
+    initializeRoom()
+    initializeWeather()
+    sim.run_simulation_parameterized(param_arr, hvac, room, weather)
+    
+    # Read the content of the CSV file
+    csv_content = []
+    with open("./src/data.csv", "r") as csvfile:
+        csvreader = csv.reader(csvfile)
+        for row in csvreader:
+            csv_content.append(row)
+    
+    return {"message": "Simulation completed successfully", "csv_content": csv_content}

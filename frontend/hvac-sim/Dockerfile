@@ -12,12 +12,14 @@ RUN npm ci
 #RUN npm install @types/jquery --save
 #RUN npm cache clean --force
 RUN npm install -g @angular/cli
-
+RUN npm install @swimlane/ngx-charts d3
+RUN npm install papaparse
 # Copy the application files
 COPY . .
-
 # Build the application
 RUN npm run build --configuration=production
+
+
 
 # Use Nginx as base image
 FROM nginx:latest

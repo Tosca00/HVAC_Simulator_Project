@@ -2,36 +2,32 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import threading
-from backend.src.lib.hvac.hvac import HVAC
-from backend.src.lib.room.roomGeometry import *
-from backend.src.lib.weather import Weather
-from backend.src.lib.agent.Agent import *
+from src.lib.hvac.hvac import HVAC
+from src.lib.room.roomGeometry import *
+from src.lib.weather import Weather
+from src.lib.agent.Agent import *
 import tkinter as tk
 from tkinter import simpledialog
 from tkinter import messagebox
 import pytz
 import datetime, timedelta
-from backend.src.data import *
+from src.data import *
 import pandas as pd
 import seaborn as sns
 import matplotlib.dates as mdates
-from backend.src.tests.parametrizedArray import *
+from src.tests.parametrizedArray import *
 
 class Simulation:
 
     #aux variables for debugging 
     debugLists = False
-    debugGraphs = True
+    debugGraphs = False
 
-    def __init__(self):
-        self.hvac = HVAC()
-        self.weather = Weather(25,50,80,70,1.225,)
-        self.room = Room(4,3,5,25,0.2,self.weather)
-        self.agent = Agent()
-
-    def run_simulation_parameterized(self):
+    def run_simulation_parameterized(self,parametrized_array,hvac :HVAC,room :Room,weather :Weather):
+        #initialize room temperature
+        room.setTemperature(weather.getDegrees())
         #at start time hvac and room temperature are the same
-        self.hvac.setTemperature_Internal(self.room.temperature)
+        hvac.setTemperature_Internal(room.temperature)
 
         #initialize dataframe
         df = pd.DataFrame(columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode',"Ambient_Temperature"])
@@ -43,15 +39,15 @@ class Simulation:
 
         #initialize agent
         agent = Agent()
-        agent.classes_dict['HVAC'] = self.hvac
-        agent.classes_dict['Room'] = self.room
-        agent.classes_dict['Weather'] = self.weather
+        agent.classes_dict['HVAC'] = hvac
+        agent.classes_dict['Room'] = room
+        agent.classes_dict['Weather'] = weather
 
         startTime = datetime.datetime.strptime(parametrized_array[0][0], '%Y-%m-%d %H:%M:%S')
 
         #set the hvac with the parameters of the first row of the array
         try:
-            self.hvac.setHvac(parametrized_array,0)
+            hvac.setHvac(parametrized_array,0)
             check_array_params(parametrized_array)
         except ValueError as e:
             print(e)
@@ -62,13 +58,13 @@ class Simulation:
             while startTime <= datetime.datetime.strptime(parametrized_array[len(parametrized_array)-1][0], '%Y-%m-%d %H:%M:%S'):
                 if parametrized_array[i][0] == startTime.strftime('%Y-%m-%d %H:%M:%S'):
                     print(f"found date : {i} of {len(parametrized_array)-1}")
-                    self.hvac.setHvac(parametrized_array,i)
+                    hvac.setHvac(parametrized_array,i)
                     i += 1
                 #timerAux = time.time() - consumtionTimer
                 consumtionTimer = time.time()
                 agent.tick()
                 #print(f"temperature : {str(hvac.getTemperature_Internal())} °C")
-                df = pd.concat([df, pd.DataFrame([[self.hvac.getTemperature_Internal(), self.hvac.getSetpoint(), self.hvac.getPowerConsumption(), startTime, self.hvac.getHVACMode(),self.weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp','Mode',"Ambient_Temperature"])], ignore_index=True)
+                df = pd.concat([df, pd.DataFrame([[hvac.getTemperature_Internal(), hvac.getSetpoint(), hvac.getPowerConsumption(), startTime, hvac.getHVACMode(),weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp','Mode',"Ambient_Temperature"])], ignore_index=True)
                 startTime += datetime.timedelta(seconds=1)
                 #print(f"date : {startTime.strftime('%Y-%m-%d %H:%M:%S')}")
                 
@@ -79,7 +75,7 @@ class Simulation:
         print(f"found {i} dates.")
         # Create and save DataFrame after the simulation loop ends
         #print(f"total time elapsed : {str(time_counter)} seconds")
-        df.to_csv('backend/src/data.csv', index=False)
+        df.to_csv('./src/data.csv', index=False)
         print(f"startTime valude : {parametrized_array[len(parametrized_array)-1][0]}")
         #print(f"room temperature : {str(room.temperature)} °C")
         if self.debugGraphs:
@@ -89,7 +85,9 @@ class Simulation:
 
        
         if self.debugLists :
-            print("----------------------------")        
+            print("----------------------------")
+        
+        print("simulation ended")
 
 
 def plot_temperaturesAndSetpoint(df):
