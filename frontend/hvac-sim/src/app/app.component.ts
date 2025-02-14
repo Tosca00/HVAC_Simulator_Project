@@ -27,12 +27,12 @@ export class AppComponent implements OnInit{
     const injector = Injector.create({providers: [{provide: SIM_TYPE, useValue: 0}]});
     this.vrc_remote.createComponent(factory, 0, injector);
 
-    const otherButton = document.getElementById('pr_sim');
-    if(otherButton) {
-      if (otherButton.style.visibility === 'visible') {
-        otherButton.style.visibility = 'hidden';
-      } else {
-        otherButton.style.display = 'visible';
+    const paramButton = document.getElementById('pr_sim');
+    const realTimeButton = document.getElementById('rt_sim');
+    if(paramButton) {
+      paramButton.style.visibility = 'hidden';
+      if(realTimeButton?.style.visibility === 'hidden') {
+        realTimeButton.style.visibility = 'visible';
       }
     }
   }
@@ -44,12 +44,12 @@ export class AppComponent implements OnInit{
     const factory = this.resolver.resolveComponentFactory(RemoteComponent);
     const injector = Injector.create({providers: [{provide: SIM_TYPE, useValue: 1}]});
     this.vrc_remote.createComponent(factory, 0, injector);
-    const otherButton = document.getElementById('rt_sim');
-    if(otherButton) {
-      if (otherButton.style.visibility === 'visible') {
-        otherButton.style.visibility = 'hidden';
-      } else {
-        otherButton.style.display = 'visible';
+    const paramButton = document.getElementById('pr_sim');
+    const realTimeButton = document.getElementById('rt_sim');
+    if(realTimeButton) {
+      realTimeButton.style.visibility = 'hidden';
+      if(paramButton?.style.visibility === 'hidden') {
+        paramButton.style.visibility = 'visible';
       }
     }
   }

@@ -1,1 +1,1 @@
-{"responses": [], "weatherTemperature": 0, "room": {"height": 0, "width": 0, "length": 0}, "simulationType": 1}
+{"hvac_settings": {"setpoint": 24, "isOn": "ON", "selectedMode": "HEATING"}, "room": {"height": 2, "width": 2, "length": 2}, "weatherTemperature": 22, "simulationType": 1}

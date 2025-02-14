@@ -23,32 +23,56 @@ class Simulation:
     debugLists = False
     debugGraphs = False
 
-    def run_simulation_realtime(self,hvac :HVAC,room :Room,weather :Weather):
+    def run_simulation_realtime(self, hvac: HVAC, room: Room, weather: Weather, stop_signal: threading.Event):
         room.setTemperature(weather.getDegrees())
-        #at start time hvac and room temperature are the same
+        # at start time hvac and room temperature are the same
         hvac.setTemperature_Internal(room.temperature)
-        df = pd.DataFrame(columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode',"Ambient_Temperature"])
-        #initialize clock for simulation
+        df = pd.DataFrame(columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode', "Ambient_Temperature"])
+        # initialize clock for simulation
         clock_tz = pytz.timezone('Europe/Rome')
         rome_date = datetime.datetime.now(clock_tz)
         print(f"SIMULATION START TIME : {rome_date.strftime('%Y-%m-%d %H:%M:%S')}")
 
-        #initialize agent
+        # initialize agent
         agent = Agent()
         agent.classes_dict['HVAC'] = hvac
         agent.classes_dict['Room'] = room
         agent.classes_dict['Weather'] = weather
-
         startTime = datetime.datetime.now(clock_tz)
 
-        while True:
+        hvac.setTemperature_Internal(room.temperature)
+
+        data: dict
+        with open("data.json", "r") as f:
+            data = json.load(f)
+        hvac_settings = data.get("hvac_settings")
+        setpoint = hvac_settings["setpoint"]
+        isOn = hvac_settings["isOn"]
+        mode = hvac_settings["selectedMode"]
+        #print(f"Setpoint: {setpoint}, Mode: {mode}, isOn: {type(isOn)}")
+        #print(f"hvac_settings: {hvac_settings}")  
+        arrayParam = []
+        arrayParam.append([0,setpoint, mode, isOn])
+
+        hvac.setHvac(arrayParam,0)
+        while not stop_signal.is_set():
             try:
+                startTime = datetime.datetime.now(clock_tz).replace(microsecond=0, tzinfo=None)
                 agent.tick()
-                df = pd.concat([df, pd.DataFrame([[hvac.getTemperature_Internal(), hvac.getSetpoint(), hvac.getPowerConsumption(), startTime, hvac.getHVACMode(),weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp','Mode',"Ambient_Temperature"])], ignore_index=True)
+                df = pd.concat([df, pd.DataFrame([[agent.classes_dict['HVAC'].getTemperature_Internal(), agent.classes_dict['HVAC'].getSetpoint(), agent.classes_dict['HVAC'].getPowerConsumption(), startTime, agent.classes_dict['HVAC'].getHVACMode(), weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode', "Ambient_Temperature"])], ignore_index=True)
                 time.sleep(1)
-            except KeyboardInterrupt :
+                print(f"efficiency: {agent.classes_dict['HVAC'].efficiency}")
+            except KeyboardInterrupt:
                 print("SIMULATION INTERRUPTED BY USER COMMAND")
-                exit()
+                break
+
+        print("SIMULATION ENDED")
+        df.to_csv('./src/data_realtime.csv', index=False)
+        if self.debugGraphs:
+            plot_temperaturesAndSetpoint(df)
+            plot_powerConsumption(df)
+        if self.debugLists:
+            print(df)
 
 
     def run_simulation_parameterized(self,parametrized_array,hvac :HVAC,room :Room,weather :Weather):
@@ -85,16 +109,12 @@ class Simulation:
         try:
             while startTime <= datetime.datetime.strptime(parametrized_array[len(parametrized_array)-1][0], '%Y-%m-%d %H:%M:%S'):
                 if parametrized_array[i][0] == startTime.strftime('%Y-%m-%d %H:%M:%S'):
-                    #print(f"found date : {i} of {len(parametrized_array)-1}")
                     hvac.setHvac(parametrized_array,i)
                     i += 1
-                #timerAux = time.time() - consumtionTimer
-                #consumtionTimer = time.time()
                 agent.tick()
-                #print(f"temperature : {str(hvac.getTemperature_Internal())} °C")
-                df = pd.concat([df, pd.DataFrame([[hvac.getTemperature_Internal(), hvac.getSetpoint(), hvac.getPowerConsumption(), startTime, hvac.getHVACMode(),weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp','Mode',"Ambient_Temperature"])], ignore_index=True)
+                df = pd.concat([df, pd.DataFrame([[agent.classes_dict['HVAC'].getTemperature_Internal(), agent.classes_dict['HVAC'].getSetpoint(), agent.classes_dict['HVAC'].getPowerConsumption(), startTime, agent.classes_dict['HVAC'].getHVACMode(), weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode', "Ambient_Temperature"])], ignore_index=True)
+                
                 startTime += datetime.timedelta(seconds=1)
-                #print(f"date : {startTime.strftime('%Y-%m-%d %H:%M:%S')}")
                 
         except KeyboardInterrupt :
             print("SIMULATION INTERRUPTED BY USER COMMAND")

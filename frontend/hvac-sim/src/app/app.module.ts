@@ -13,6 +13,8 @@ import { MatOptionModule } from '@angular/material/core';
 import { WeatherRoomComponent } from './weather-room/weather-room.component';
 import { ChartComponentComponent } from './chart-component/chart-component.component';
 import { RemoteComponent } from './remote/remote.component';
+import { HvacRealtimeFormComponent } from './hvac-realtime-form/hvac-realtime-form.component';
+import { AnomalyComponent } from './anomaly/anomaly.component';
 
 
 @NgModule({
@@ -21,7 +23,9 @@ import { RemoteComponent } from './remote/remote.component';
     UserFormComponent,
     WeatherRoomComponent,
     ChartComponentComponent,
-    RemoteComponent
+    RemoteComponent,
+    HvacRealtimeFormComponent,
+    AnomalyComponent
   ],
   imports: [
     BrowserModule,

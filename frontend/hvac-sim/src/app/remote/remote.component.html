@@ -2,7 +2,11 @@
 {{title}}
 </h1>
 <app-weather-room></app-weather-room>
-<button mat-raised-button (click)="AddFormRow()">Add Row</button>
-<button mat-raised-button (click)="RemoveFormRow()">Remove Row</button>
-<button mat-raised-button (click)="createFormResponse()">Submit</button>
+<app-hvac-realtime-form [style.visibility]="sim_type == 1 ? 'visible' : 'hidden'"></app-hvac-realtime-form>
+<button mat-raised-button (click)="AddFormRow()" id="addRowButton" [style.visibility]="sim_type == 0 ? 'visible' : 'hidden'">Add Row</button>
+<button mat-raised-button (click)="RemoveFormRow()" id="removeRowButton" [style.visibility]="sim_type == 0 ? 'visible' : 'hidden'">Remove Row</button>
+<button mat-raised-button (click)="DownloadResults()"[style.visibility]="'hidden'" id="downloadButton">Download Results</button>
+<button mat-raised-button (click)="manageSubmit()">Submit</button>
 <button mat-raised-button (click)="showGraph()">show graph</button>
+<button mat-raised-button (click)="interruptSim()" [style.visibility]="sim_type == 1 ? 'visible' : 'hidden'">interrupt</button>
+<app-anomaly></app-anomaly>

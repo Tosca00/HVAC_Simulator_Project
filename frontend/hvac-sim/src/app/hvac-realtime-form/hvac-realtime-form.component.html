@@ -1,0 +1,11 @@
+<mat-form-field>
+    <mat-label>HVAC settings</mat-label>
+        <mat-label>Setpoint</mat-label>
+        <input matInput [(ngModel)]="setpoint" type="number">
+    <mat-select [(ngModel)]="modes">
+        <mat-option value="COOLING">cool</mat-option>
+        <mat-option value="HEATING">heat</mat-option>
+        <mat-option value="NO_MODE">off</mat-option>
+    </mat-select>
+    <mat-checkbox [(ngModel)]="isOn">On</mat-checkbox>
+</mat-form-field>

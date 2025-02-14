@@ -8,6 +8,7 @@ from src.lib.weather.weather import Weather
 from src.lib.hvac.hvac import HVAC
 from simulation import Simulation
 import csv
+import threading
 
 app = FastAPI()
 
@@ -47,35 +48,93 @@ def initializeSimType():
     sim_type = data.get("simulationType")
     return sim_type
 
-@app.post("/")
-async def save_data(data: dict):
+hvac: HVAC = HVAC()
+
+@app.post("/changeHVACsettings")
+def change_settings(data: dict):
+    hvac_settings = data.get("hvac_settings")
+    setpoint = hvac_settings["setpoint"]
+    isOn = hvac_settings["isOn"]
+    mode = hvac_settings["selectedMode"]
+    arrayParam = []
+    arrayParam.append([0,setpoint, mode, isOn])
+    hvac.setHvac(arrayParam,0)
+    return {"message": "HVAC settings changed successfully"}
+
+@app.post("/setupRealTime")
+def save_data_realtime(data: dict):
     with open("data.json", "w") as f:
         json.dump(data, f)
-    global param_arr
+    global sim_type
+    sim_type = initializeSimType()
     global weather
     global room
-    global sim_type
     weather = initializeWeather()
     room = initializeRoom()
+    return {"message": "Data saved successfully"}
+
+@app.post("/restoreEffAnomaly")
+def restoreEffAnomaly():
+    hvac.efficiency = 0.98
+    return {"message": "Efficiency anomaly restored successfully"}
+
+@app.post("/efficiencyAnomaly")
+def efficiencyAnomaly():
+    hvac.efficiency = 0.2
+    return {"message": "Efficiency anomaly set successfully"}
+
+@app.post("/setupParameterized")
+def save_data_param(data: dict):
+    with open("data.json", "w") as f:
+        json.dump(data, f)
+    global sim_type
     sim_type = initializeSimType()
+    global param_arr
     param_arr = setupArrFromJSON("data.json")
+    global weather
+    global room
+    weather = initializeWeather()
+    room = initializeRoom()
+    hvac = HVAC()
     return {"message": "Data saved successfully"}
 
 
+@app.post("/")
+async def save_data(data: dict):
+    return {"message": "dafault address"}
 
-@app.post("/simulate")
+interrupt_signal = threading.Event()
+
+@app.post("/interrupt")
+def interrupt_simulation(data: dict):
+    global interrupt_signal
+    interrupt_signal.set()
+    return {"message": "Simulation interrupted"}
+
+@app.post("/simulateRealTime")
 def run_simulation():
-    hvac = HVAC()
     sim = Simulation()
     initializeRoom()
     initializeWeather()
-    #sim.run_simulation_parameterized(param_arr, hvac, room, weather)
-    if sim_type == 0:
-        #sim.run_simulation_parameterized(param_arr, hvac, room, weather)
-        return {"message": "parameterized"}
-    else:
-        #sim.run_simulation_realtime(hvac, room, weather)
-        return {"message": "realtime"}
+    interrupt_signal.clear()
+    sim.run_simulation_realtime(hvac, room, weather, interrupt_signal)
+
+    # Read the content of the CSV file
+    csv_content = []
+    with open("./src/data_realtime.csv", "r") as csvfile:
+        csvreader = csv.reader(csvfile)
+        for row in csvreader:
+            csv_content.append(row)
+    
+    return {"message": "Simulation completed successfully", "csv_content": csv_content}
+
+@app.post("/simulateParameterized")
+def run_simulation():
+    sim = Simulation()
+    initializeRoom()
+    initializeWeather()
+
+    sim.run_simulation_parameterized(param_arr, hvac, room, weather)	
 
     # Read the content of the CSV file
     csv_content = []
