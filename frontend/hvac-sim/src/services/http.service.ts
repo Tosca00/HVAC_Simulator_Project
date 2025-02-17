@@ -51,6 +51,30 @@ export class HttpService {
     return await httpService.post('/restoreEffAnomaly');
   }
 
+  async sendThreshAnomaly()
+  {
+    return await httpService.post('/thresholdAnomaly');
+  }
+
+  async restoreThreshAnomaly()
+  {
+    return await httpService.post('/restoreThreshAnomaly');
+  }
+
+  async lossOfPowerAnomaly()
+  {
+    return await httpService.post('/lossOfPowerAnomaly');
+  }
+
+  async restoreFaultAnomaly()
+  {
+    return await httpService.post('/restoreFaultAnomaly');
+  }
+
+  async sendFaultAnomaly()
+  {
+    return await httpService.post('/faultAnomaly');
+  }
 
   async createFormResponseRealTime(FormResponce: 
     {hvac_settings: 

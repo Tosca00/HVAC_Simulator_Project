@@ -9,6 +9,10 @@ from src.lib.hvac.hvac import HVAC
 from simulation import Simulation
 import csv
 import threading
+import random
+import pytz
+import datetime, timedelta
+import time
 
 app = FastAPI()
 
@@ -82,6 +86,48 @@ def restoreEffAnomaly():
 def efficiencyAnomaly():
     hvac.efficiency = 0.2
     return {"message": "Efficiency anomaly set successfully"}
+
+@app.post("/thresholdAnomaly")
+def thresholdAnomaly():
+    hvac.tempDiff = 4
+    return {"message": f"Threshold anomaly set to {hvac.tempDiff}"}
+
+@app.post("/restoreThreshAnomaly")
+def restoreThreshAnomaly():
+    hvac.tempDiff = 2
+    return {"message": f"Threshold anomaly restored to {hvac.tempDiff}"}
+
+
+@app.post("/lossOfPowerAnomaly")
+def lossOfPowerAnomaly():
+    thread = threading.Thread(target=actuate_loss_of_power)
+    thread.start()
+    thread.join()
+    return {"message": "Loss of power anomaly ended"}
+
+
+# Main loss of power function
+def actuate_loss_of_power():
+    power_aux = hvac.Power_Watt
+    for i in range(20):
+        rand = random.randint(0, 1)
+        if(rand == 1):
+            hvac.Power_Watt = power_aux / 2
+        else:
+            hvac.Power_Watt = power_aux
+        time.sleep(1)
+        i+=1
+    hvac.Power_Watt = power_aux
+    
+@app.post("/restoreFaultAnomaly")
+def restoreFaultAnomaly():
+    hvac.faulty = False
+    return {"message": f"Fault anomaly restored to {hvac.faulty}"}
+
+@app.post("/faultAnomaly")
+def faultAnomaly():
+    hvac.faulty = True
+    return {"message": f"Fault anomaly set to {hvac.faulty}"}
 
 @app.post("/setupParameterized")
 def save_data_param(data: dict):

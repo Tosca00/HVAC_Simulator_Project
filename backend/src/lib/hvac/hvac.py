@@ -33,6 +33,7 @@ class HVAC:
         self.deltaEn = 0.1 #kWh
         self.efficiency = 0.98 #%
         self.Power_Watt = self.BTUs * 0.29307107 #W
+        self.faulty = False
         
         
 
@@ -175,18 +176,15 @@ class HVAC:
             elif self.getHVACMode() == self.HVAC_Mode.COOLING:
                 if self.getTemperature_Internal() >= self.getSetpoint():
                     self.TurnOn(self.HVAC_Mode.COOLING)
-        #powerFactor = self.changePower()
-        #print(f"actual state : {type(self.getHVAC_State())}")
-        #print(f"enum state : {type(self.HVAC_State.ON)}")
-        #print(f"condition : {self.getHVAC_State() == self.HVAC_State.ON} and {self.getHVACMode() == self.HVAC_Mode.HEATING}")
-        if self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.HEATING:
-            #print("HEATING")
-            deltaT = self.ChangeTemp(room)
-            #print (f"deltaT : {deltaT}")
-            self.setTemperature_Internal(self.getTemperature_Internal() + deltaT)
-        elif self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.COOLING:
-            deltaT = self.ChangeTemp(room)
-            self.setTemperature_Internal(self.getTemperature_Internal() - deltaT)
+        if not self.faulty:
+            if self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.HEATING:
+                #print("HEATING")
+                deltaT = self.ChangeTemp(room)
+                #print (f"deltaT : {deltaT}")
+                self.setTemperature_Internal(self.getTemperature_Internal() + deltaT)
+            elif self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.COOLING:
+                deltaT = self.ChangeTemp(room)
+                self.setTemperature_Internal(self.getTemperature_Internal() - deltaT)
         #print (f"Temperature : {self.getTemperature_Internal()}")
         #print (f"Setpoint : {self.getSetpoint()}")
         #print (f"Mode : {self.getHVACMode()}")

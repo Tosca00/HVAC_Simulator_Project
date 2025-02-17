@@ -12,4 +12,4 @@ services:
     volumes:
       - ./frontend:/app
     depends_on:
-      - backend
+    - backend

@@ -12,6 +12,8 @@ import { HttpService } from '../../services/http.service';
 export class AnomalyComponent implements OnInit {
 
   isEffset: boolean = false;
+  isThreshset: boolean = false;
+  isFaultset: boolean = false;
 
   ngOnInit(): void {
     console.log('AnomalyComponent ngOnInit');
@@ -34,4 +36,44 @@ export class AnomalyComponent implements OnInit {
       console.log(response.data.message);
     }
   }
+
+  async threshold()
+  {
+    if(!this.isThreshset) 
+    {
+    const response = await this.http.sendThreshAnomaly();
+    this.isThreshset = true;
+    console.log(response.data.message);
+    }
+    else
+    {
+      const response = await this.http.restoreThreshAnomaly();
+      this.isThreshset = false;
+      console.log(response.data.message);
+    }
+
+  }
+
+  async lossOfPower()
+  {
+    const response = await this.http.lossOfPowerAnomaly();
+    console.log(response.data.message);
+  }
+
+  async fault()
+  {
+    if(!this.isFaultset) 
+    {
+    const response = await this.http.sendFaultAnomaly();
+    this.isFaultset = true;
+    console.log(response.data.message);
+    }
+    else
+    {
+      const response = await this.http.restoreFaultAnomaly();
+      this.isFaultset = false;
+      console.log(response.data.message);
+    }
+  }
+
 }
