@@ -24,6 +24,8 @@ export class RemoteComponent implements OnInit {
 
   simulationResultDownloadData: Array<any> = [];
 
+  
+
   ngOnInit(): void {
   }
   userFormComponents : Array<UserFormComponent> = [];
@@ -90,6 +92,8 @@ export class RemoteComponent implements OnInit {
     this.sim_type = sim_type;
   }
 
+  p : HTMLElement = document.createElement('p');
+  downloadButton : HTMLElement = document.createElement('button');
   async createFormResponse() 
   {
     const formResponses = {
@@ -111,17 +115,23 @@ export class RemoteComponent implements OnInit {
     try {
       const result = await this.http.createFormResponse(formResponses);
       const simulationResult = await this.http.callSimulationParameterized();
-      //const simulationResult_CSV = simulationResult.data.csv_content.map((row: any) => row.join(',')).join('\n');
-      //this.chartComponent.dataForGraph(simulationResult_CSV);
       console.log(simulationResult);
       console.log(typeof simulationResult.data.csv_content);
       this.simulationResultDownloadData = simulationResult.data.csv_content;
       console.log(this.simulationResultDownloadData);
       this.isOfflineSimEnded = true;
-      const downloadButton = document.getElementById('downloadButton');
-      if(downloadButton) {
-        downloadButton.style.visibility = 'visible';
+
+      
+      this.p.textContent = simulationResult.data.message;
+      document.body.appendChild(this.p);
+
+      if(simulationResult.data.isResCorrect)
+      {
+        this.downloadButton.textContent = 'Download Results';
+        this.downloadButton.onclick = this.DownloadResults.bind(this);
+        document.body.appendChild(this.downloadButton);
       }
+      
     } catch (error) {
       console.error('Error in form response:', error);
     }

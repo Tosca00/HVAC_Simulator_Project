@@ -10,12 +10,13 @@ import tkinter as tk
 from tkinter import simpledialog
 from tkinter import messagebox
 import pytz
-import datetime, timedelta
+import datetime
 from src.data import *
 import pandas as pd
 import seaborn as sns
 import matplotlib.dates as mdates
 from src.tests.parametrizedArray import *
+
 
 class Simulation:
 
@@ -75,7 +76,7 @@ class Simulation:
             print(df)
 
 
-    def run_simulation_parameterized(self,parametrized_array,hvac :HVAC,room :Room,weather :Weather):
+    def run_simulation_parameterized(self,parametrized_array,hvac :HVAC,room :Room,weather :Weather, startDateProg :datetime.datetime, endDateProg :datetime.datetime,applyAnomlayProg: callable,progAnomalyName :str):
         #initialize room temperature
         room.setTemperature(weather.getDegrees())
         #at start time hvac and room temperature are the same
@@ -102,15 +103,36 @@ class Simulation:
             hvac.setHvac(parametrized_array,0)
             check_array_params(parametrized_array)
         except ValueError as e:
-            print(e)
-            exit()
+            raise e
 
         i = 0
+        progLOP_counter = 0
+        progLOP_canStart = False
+        power_aux = hvac.Power_Watt
+        
         try:
             while startTime <= datetime.datetime.strptime(parametrized_array[len(parametrized_array)-1][0], '%Y-%m-%d %H:%M:%S'):
                 if parametrized_array[i][0] == startTime.strftime('%Y-%m-%d %H:%M:%S'):
                     hvac.setHvac(parametrized_array,i)
                     i += 1
+                if startTime == startDateProg:
+                    progLOP_canStart = True
+                    applyAnomlayProg(True)
+                if startTime == endDateProg:
+                    applyAnomlayProg(False)
+                if(progAnomalyName == "lossOfPower" and progLOP_canStart and progLOP_counter <= 30):
+                    
+                    rand = random.randint(0,1)
+                    print(f"LOP anomaly active with counter {progLOP_counter} and rand : {rand}")
+                    if(rand == 1):
+                        agent.classes_dict['HVAC'].Power_Watt = power_aux / 2
+                    else:
+                        agent.classes_dict['HVAC'].Power_Watt = power_aux
+                    progLOP_counter +=1
+                else:
+                    hvac.Power_Watt = power_aux
+                    progLOP_canStart = False
+                print(f"current time : {startTime} , efficiency : {agent.classes_dict['HVAC'].efficiency}")       
                 agent.tick()
                 df = pd.concat([df, pd.DataFrame([[agent.classes_dict['HVAC'].getTemperature_Internal(), agent.classes_dict['HVAC'].getSetpoint(), agent.classes_dict['HVAC'].getPowerConsumption(), startTime, agent.classes_dict['HVAC'].getHVACMode(), weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode', "Ambient_Temperature"])], ignore_index=True)
                 
@@ -124,7 +146,7 @@ class Simulation:
         # Create and save DataFrame after the simulation loop ends
         #print(f"total time elapsed : {str(time_counter)} seconds")
         df.to_csv('./src/data.csv', index=False)
-        print(f"startTime valude : {parametrized_array[len(parametrized_array)-1][0]}")
+        print(f"startTime value : {parametrized_array[len(parametrized_array)-1][0]}")
         #print(f"room temperature : {str(room.temperature)} °C")
         if self.debugGraphs:
             plot_temperaturesAndSetpoint(df)

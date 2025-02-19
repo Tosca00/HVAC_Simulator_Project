@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import json
-from src.tests.parametrizedArray import setupArrFromJSON,printArr
+from src.tests.parametrizedArray import setupArrFromJSON
 import numpy as np
 from src.lib.room.roomGeometry import Room
 from src.lib.weather.weather import Weather
@@ -118,7 +118,65 @@ def actuate_loss_of_power():
         time.sleep(1)
         i+=1
     hvac.Power_Watt = power_aux
+
+
+#default implementation of variables for anomaly programming on demand
+startDateProg = datetime.datetime(1970, 1, 1, tzinfo=pytz.utc).strptime("1970-01-01 00:00:00", '%Y-%m-%d %H:%M:%S')
+endDateProg = datetime.datetime(1970, 1, 1, tzinfo=pytz.utc).strptime("1970-01-01 00:00:00", '%Y-%m-%d %H:%M:%S')
+progAnomalyName = "none"
+
+@app.post("/sendEffAnomalyProg")
+def sendEffAnomalyProg(data: dict):
+    global startDateProg, endDateProg, progAnomalyName
+    startDateProg = datetime.datetime.strptime(data["dateFrom"], '%Y-%m-%d %H:%M:%S')
+    endDateProg = datetime.datetime.strptime(data["dateTo"], '%Y-%m-%d %H:%M:%S')
+    progAnomalyName = "efficiency"
+    print(f"date from {startDateProg} to {endDateProg}")
+
+
+@app.post("/sendthresholdAnomalyProg")
+def sendthresholdAnomalyProg(data: dict):
+    global startDateProg, endDateProg, progAnomalyName
+    startDateProg = datetime.datetime.strptime(data["dateFrom"], '%Y-%m-%d %H:%M:%S')
+    endDateProg = datetime.datetime.strptime(data["dateTo"], '%Y-%m-%d %H:%M:%S')
+    progAnomalyName = "threshold"
+    print(f"date from {startDateProg} to {endDateProg}")
+
+
+@app.post("/sendFaultAnomalyProg")
+def sendFaultAnomalyProg(data: dict):
+    global startDateProg, endDateProg, progAnomalyName
+    startDateProg = datetime.datetime.strptime(data["dateFrom"], '%Y-%m-%d %H:%M:%S')
+    endDateProg = datetime.datetime.strptime(data["dateTo"], '%Y-%m-%d %H:%M:%S')
+    progAnomalyName = "fault"
+    print(f"date from {startDateProg} to {endDateProg}")
+
+
+@app.post("/sendLOPAnomalyProg")
+def sendLOPAnomalyProg(data: dict):
+    global startDateProg, progAnomalyName
+    startDateProg = datetime.datetime.strptime(data["dateFrom"], '%Y-%m-%d %H:%M:%S')
+    progAnomalyName = "lossOfPower"
+    print(f"date from {startDateProg} to -----")
     
+def applyAnomlayProg(isAnomalyActive: bool):
+    if isAnomalyActive:
+        if(progAnomalyName == "efficiency"):
+            hvac.efficiency = 0.2
+        elif(progAnomalyName == "threshold"):
+            hvac.tempDiff = 4
+        elif(progAnomalyName == "fault"):
+            hvac.faulty = True
+        
+    else:
+        if(progAnomalyName == "efficiency"):
+            hvac.efficiency = 0.98
+        elif(progAnomalyName == "threshold"):
+            hvac.tempDiff = 2
+        elif(progAnomalyName == "fault"):
+            hvac.faulty = False
+
+
 @app.post("/restoreFaultAnomaly")
 def restoreFaultAnomaly():
     hvac.faulty = False
@@ -146,7 +204,7 @@ def save_data_param(data: dict):
 
 
 @app.post("/")
-async def save_data(data: dict):
+async def save_data():
     return {"message": "dafault address"}
 
 interrupt_signal = threading.Event()
@@ -180,8 +238,10 @@ def run_simulation():
     initializeRoom()
     initializeWeather()
 
-    sim.run_simulation_parameterized(param_arr, hvac, room, weather)	
-
+    try:
+        sim.run_simulation_parameterized(param_arr, hvac, room, weather,startDateProg,endDateProg,applyAnomlayProg,progAnomalyName)	
+    except Exception as e:
+        return {"message": f"{e}","isResCorrect": False}
     # Read the content of the CSV file
     csv_content = []
     with open("./src/data.csv", "r") as csvfile:
@@ -189,4 +249,4 @@ def run_simulation():
         for row in csvreader:
             csv_content.append(row)
     
-    return {"message": "Simulation completed successfully", "csv_content": csv_content}
+    return {"message": "Simulation completed successfully, download data using the following button", "csv_content": csv_content, "isResCorrect": True}

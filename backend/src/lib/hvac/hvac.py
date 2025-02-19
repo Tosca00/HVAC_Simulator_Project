@@ -250,9 +250,9 @@ class HVAC:
         # Net energy change
         Q_eff = Q_In - Q_Out
 
-        print(f"walls area : {room.wallsArea}")
-        print(f"room heat loss coefficient : {room.heatLossCoefficient}")
-        print(f"room heat capacity : {room.heatCapacity}")
+        #print(f"walls area : {room.wallsArea}")
+        #print(f"room heat loss coefficient : {room.heatLossCoefficient}")
+        #print(f"room heat capacity : {room.heatCapacity}")
 
         # Effective temperature change
         delta_temp_effective = Q_eff / room.heatCapacity

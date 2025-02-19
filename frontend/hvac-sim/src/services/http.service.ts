@@ -76,6 +76,23 @@ export class HttpService {
     return await httpService.post('/faultAnomaly');
   }
 
+  async sendEffAnomalyProg(dateFrom: string, dateTo:string)
+  {
+    await httpService.post('/sendEffAnomalyProg', {dateFrom, dateTo});
+  }
+  async sendthresholdAnomalyProg(dateFrom: string, dateTo:string)
+  {
+    await httpService.post('/sendthresholdAnomalyProg', {dateFrom, dateTo});
+  }
+  async sendLOPAnomalyProg(dateFrom: string)
+  {
+    await httpService.post('/sendLOPAnomalyProg', {dateFrom});
+  }
+  async sendFaultAnomalyProg(dateFrom: string, dateTo:string)
+  {
+    await httpService.post('/sendFaultAnomalyProg', {dateFrom, dateTo});
+  }
+
   async createFormResponseRealTime(FormResponce: 
     {hvac_settings: 
       {setpoint : number, 
@@ -105,4 +122,5 @@ export class HttpService {
   async callSimulationRealTime() {
     return await httpService.post('/simulateRealTime');
   }
+
 }
