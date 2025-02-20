@@ -8,10 +8,10 @@ import { Component } from '@angular/core';
   styleUrl: './weather-room.component.css'
 })
 export class WeatherRoomComponent {
-    height: number = 0;
-    width: number = 0;
-    length: number = 0;
-    weatherTemperature: number = 0;
+    height: number = 1;
+    width: number = 1;
+    length: number = 1;
+    weatherTemperature: number = 20;
 
     isIntegerOrFloat(value: number): boolean {
       return Number.isInteger(value)

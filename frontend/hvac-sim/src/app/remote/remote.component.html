@@ -2,12 +2,42 @@
 {{title}}
 </h1>
 <app-weather-room></app-weather-room>
-<app-hvac-realtime-form [style.visibility]="sim_type == 1 ? 'visible' : 'hidden'"></app-hvac-realtime-form>
-<button mat-raised-button (click)="AddFormRow()" id="addRowButton" [style.visibility]="sim_type == 0 ? 'visible' : 'hidden'">Add Row</button>
-<button mat-raised-button (click)="RemoveFormRow()" id="removeRowButton" [style.visibility]="sim_type == 0 ? 'visible' : 'hidden'">Remove Row</button>
-<button mat-raised-button (click)="manageSubmit()">Submit</button>
-<button mat-raised-button (click)="showGraph()">show graph</button>
-<button mat-raised-button (click)="interruptSim()" [style.visibility]="sim_type == 1 ? 'visible' : 'hidden'">interrupt</button>
-<app-anomaly [sim_type]="sim_type"></app-anomaly>
 
-<p [style.visibility]="'hidden'" id="simulation_result"></p>
+<div id="formButtonsAndManagement">
+    <h2>Quick guide for selected simulation type ({{ sim_type == 0 ? 'programmed' : 'Real time' }}) : <br></h2>
+    <p>
+    <span *ngIf="sim_type == 0">
+        User is required to declare a programmed functioning for the system, including the intervals (via date) and the modes of functioning with the desired temperature.<br>
+        The dates must be inserted in order, and the system will follow the programmed functioning until the last date is reached.<br>
+        Once started the simulation cannot be interrupted or modified, the system will follow the programmed functioning until the last date is reached.<br>
+        - Add row button : adds a new date for simulation to reach with new parameters.<br>
+        - Remove row button : removes a programmed simulation step.<br>
+    </span>
+    <span *ngIf="sim_type == 1">
+        This type of simulation generates data in real time, therefore programmed instructions are not needed.<br>
+        The simulation can be interrupted by the user anytime.<br>
+        Parameters of the system can be modified (more specifically setpoint,mode and status) using the box underneath as it is thought to be used a remote.<br>
+        Before starting the simulation, the user must set the parameters of the system. After simulation has started use the submit button again to change the behavior to accomodate the desired inputs.<br>
+        
+    </span>
+    - Submit button : Starts the simulation.<br>
+    - Show graph is still under development and does not work in this version of the code
+    <span *ngIf="sim_type == 1">
+        - Interrupt button : Stops the simulation.<br>
+    </span>
+    </p>
+    <div class="formContainer">
+        <app-hvac-realtime-form [style.display]="sim_type == 1 ? 'initial' : 'none'"></app-hvac-realtime-form>
+        <button mat-raised-button (click)="manageSubmit()" [style.display]="(sim_type==1) ? 'initial' : 'none'">Submit</button> 
+    </div>
+    <div class="rows-int">
+        <button mat-raised-button (click)="AddFormRow()" id="addRowButton" [style.display]="sim_type == 0 ? 'initial' : 'none'">Add Row</button>
+        <button mat-raised-button (click)="RemoveFormRow()" id="removeRowButton" [style.display]="sim_type == 0 ? 'initial' : 'none'">Remove Row</button>
+        <button mat-raised-button (click)="showGraph()">Show graph</button>
+        <button mat-raised-button (click)="interruptSim()" [style.display]="sim_type == 1 ? 'initial' : 'none'">interrupt</button>    
+    </div>
+    
+</div>
+<button mat-raised-button (click)="manageSubmit()" [style.display]="(userFormComponents.length >= 2) ? 'initial' : 'none'">Submit</button>   
+
+<app-anomaly [sim_type]="sim_type"></app-anomaly>

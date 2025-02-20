@@ -1,16 +1,30 @@
-<div *ngIf="sim_type == 0">
-    <button mat-raised-button (click)="showDateDiv($event)" id="efficiency">Efficiency Anomaly</button>
-    <button mat-raised-button (click)="showDateDiv($event)" id="threshold">Threshold Anomlay</button>
-    <button mat-raised-button (click)="showDateDiv($event)" id="lOP">Loss Of Power</button>
-    <button mat-raised-button (click)="showDateDiv($event)" id="fault">Fault</button>
+<div class="app">
+    <p>
+        The following panel is used to activate the anomalies.<br>
+        <span *ngIf="sim_type == 0">
+            In programmed mode anomalies need to be given a time to operate in. Anomaly requests follow the same pattern of simulation date fields.<br>
+            Once the anomaly has been programmed press submit to inject it into the simulation.<br>
+        </span>
+        <span *ngIf="sim_type == 1">
+            In real time mode anomalies can be activated at any time.<br>
+            Press the button to activate the anomaly after the simulation has started.<br>
+        </span>
+    </p>
+    <div *ngIf="sim_type == 0">
+        <button mat-raised-button (click)="showDateDiv($event)" id="efficiency">Efficiency Anomaly</button>
+        <button mat-raised-button (click)="showDateDiv($event)" id="threshold">Threshold Anomlay</button>
+        <button mat-raised-button (click)="showDateDiv($event)" id="lOP">Loss Of Power</button>
+        <button mat-raised-button (click)="showDateDiv($event)" id="fault">Fault</button>
+    </div>
+    
+    <div *ngIf="sim_type == 1">
+        <button mat-raised-button (click)="efficiency()">Efficiency Anomaly</button>
+        <button mat-raised-button (click)="threshold()">Threshold Anomlay</button>
+        <button mat-raised-button (click)="lossOfPower()">Loss Of Power</button>
+        <button mat-raised-button (click)="fault()">Fault</button>
+    </div>
 </div>
 
-<div *ngIf="sim_type == 1">
-    <button mat-raised-button (click)="efficiency()">Efficiency Anomaly</button>
-    <button mat-raised-button (click)="threshold()">Threshold Anomlay</button>
-    <button mat-raised-button (click)="lossOfPower()">Loss Of Power</button>
-    <button mat-raised-button (click)="fault()">Fault</button>
-</div>
 
 <div id="dateDiv" style="visibility: hidden;">
     <mat-form-field>

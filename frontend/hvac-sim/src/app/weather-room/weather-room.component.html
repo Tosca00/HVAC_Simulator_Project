@@ -1,25 +1,29 @@
 <div>
+    <p>Basic Room Infomation.<br>
+    It is needed to calculate volume, generally the larger the room is the more energy is required for heating or cooling. (Measurements in meters)</p>
     <h2>Room Information</h2>
+    <p>Sizes in meters.<p>
     <mat-form-field>
         <mat-label>height</mat-label>
             <input matInput [(ngModel)]="height" type="number" min="1">
-            <mat-error *ngIf="!isIntegerOrFloat(height)">Please enter valid input</mat-error>
+            <mat-error >Please enter valid input</mat-error>
     </mat-form-field>
     <mat-form-field>
         <mat-label>width</mat-label>
-            <input matInput [(ngModel)]="width" type="number" min="1">
-            <mat-error *ngIf="!isIntegerOrFloat(width)">Please enter valid input</mat-error>
+            <input matInput [(ngModel)]="width" type="number" min="1" >
+            <mat-error>Please enter valid input</mat-error>
     </mat-form-field>
     <mat-form-field>
         <mat-label>length</mat-label>
             <input matInput [(ngModel)]="length" type="number" min="1">
-            <mat-error *ngIf="!isIntegerOrFloat(length)">Please enter valid input</mat-error>
+            <mat-error>Please enter valid input</mat-error>
     </mat-form-field>
 
     <h2>Weather Information</h2>
+    <p>Weather system is static at the moment, insert the outside weather temperature (in °C) needed for simulation.</p>
     <mat-form-field>
         <mat-label>Temperature</mat-label>
-            <input matInput [(ngModel)]="weatherTemperature" type="number" min="1">
-            <mat-error *ngIf="!isIntegerOrFloat(weatherTemperature)">Please enter valid input</mat-error>
+            <input matInput [(ngModel)]="weatherTemperature" type="number" min="-20" max="40" value="{{20}}">
+            <mat-error>Please enter valid input</mat-error>
     </mat-form-field>
 </div>

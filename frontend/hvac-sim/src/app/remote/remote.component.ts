@@ -55,15 +55,29 @@ export class RemoteComponent implements OnInit {
 
   AddFormRow() {
     const userComponent = this.vrc_userForm.createComponent(UserFormComponent);
+    const formButtonsAndManagement = document.getElementById('formButtonsAndManagement');
+    if (formButtonsAndManagement) {
+      formButtonsAndManagement.appendChild(userComponent.location.nativeElement);
+    }
     this.userFormComponents.push(userComponent.instance);
+    this.p.style.display = 'none';
+    this.p.textContent = '';
   }
   RemoveFormRow() {
     this.vrc_userForm.remove();
     this.userFormComponents.pop();
+    this.p.style.display = 'none';
+    this.p.textContent = '';
   }
 
   showGraph() {
     console.log('Show Graph is still under construction');
+    this.p.textContent = 'Show Graph is still under construction.';
+    this.p.style.display = 'initial';
+    const formButtonsAndManagement = document.getElementById('formButtonsAndManagement');
+    if (formButtonsAndManagement) {
+      formButtonsAndManagement.appendChild(this.p);
+    }
   }
 
   DownloadResults() 
@@ -135,8 +149,6 @@ export class RemoteComponent implements OnInit {
     } catch (error) {
       console.error('Error in form response:', error);
     }
-
-    //console.log(formResponses);
   }
 
   async manageSubmit() {
