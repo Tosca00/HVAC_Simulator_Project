@@ -8,7 +8,7 @@ import { Injector } from '@angular/core';
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit{
-  title = 'hvac-sim';
+  title = 'HVAC Simulation Web Application';
   
   @ViewChild(RemoteComponent) remote!: RemoteComponent;
   

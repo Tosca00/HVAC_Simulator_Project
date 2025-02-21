@@ -1,11 +1,25 @@
-<mat-form-field>
-    <mat-label>HVAC settings</mat-label><br>
-
-        <input matInput [(ngModel)]="setpoint" type="number" min="-20" max="40" required>
-    <mat-select [(ngModel)]="modes">
-        <mat-option value="COOLING">cool</mat-option>
-        <mat-option value="HEATING">heat</mat-option>
-        <mat-option value="NO_MODE">off</mat-option>
-    </mat-select>
-    <mat-checkbox [(ngModel)]="isOn">On</mat-checkbox>
-</mat-form-field>
+<div class="hvac-settings-container">
+    <h2>HVAC-SETTINGS</h2>
+  
+    <div class="form-group">
+      <label for="setpoint">SETPOINT :</label>
+      <input type="number" id="setpoint" [(ngModel)]="setpoint" class="input-field" min="-20" max="40" required>
+    </div>
+  
+    <div class="form-group">
+      <label for="mode">MODE :</label>
+      <mat-form-field appearance="outline">
+        <mat-label style="color: black;">Select Mode</mat-label>
+        <mat-select [(ngModel)]="modes" id="mode">
+          <mat-option value="HEATING">heating</mat-option>
+          <mat-option value="COOLING">cooling</mat-option>
+          <mat-option value="NO_MODE">off</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  
+    <div class="form-group">
+      <label for="status">STATUS :</label>
+      <mat-checkbox id="status" [(ngModel)]="isOn"></mat-checkbox>
+    </div>
+  </div>

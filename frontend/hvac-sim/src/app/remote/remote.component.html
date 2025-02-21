@@ -21,9 +21,11 @@
         
     </span>
     - Submit button : Starts the simulation.<br>
-    - Show graph is still under development and does not work in this version of the code
+    - Show graph is still under development and does not work in this version of the code.<br>
     <span *ngIf="sim_type == 1">
         - Interrupt button : Stops the simulation.<br>
+        Keep in mind that Heating mode only works if the setpoint temperature is higher than outside temperature, and Cooling mode only works if the setpoint temperature is lower than outside temperature,<br>
+        Otherwise the system will be set inactive.<br>
     </span>
     </p>
     <div class="formContainer">
@@ -34,10 +36,10 @@
         <button mat-raised-button (click)="AddFormRow()" id="addRowButton" [style.display]="sim_type == 0 ? 'initial' : 'none'">Add Row</button>
         <button mat-raised-button (click)="RemoveFormRow()" id="removeRowButton" [style.display]="sim_type == 0 ? 'initial' : 'none'">Remove Row</button>
         <button mat-raised-button (click)="showGraph()">Show graph</button>
-        <button mat-raised-button (click)="interruptSim()" [style.display]="sim_type == 1 ? 'initial' : 'none'">interrupt</button>    
+        <button mat-raised-button (click)="interruptSim()" [style.display]="sim_type == 1 ? 'initial' : 'none'">interrupt</button>
     </div>
-    
 </div>
 <button mat-raised-button (click)="manageSubmit()" [style.display]="(userFormComponents.length >= 2) ? 'initial' : 'none'">Submit</button>   
-
+<div id="graph" style="display: none;">
+</div>
 <app-anomaly [sim_type]="sim_type"></app-anomaly>

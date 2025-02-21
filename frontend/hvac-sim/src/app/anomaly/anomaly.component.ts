@@ -108,18 +108,22 @@ export class AnomalyComponent implements OnInit {
     this.progAnomalyType = (event.target as HTMLElement).id;
     const dateDiv = document.getElementById('dateDiv');
     if(dateDiv) {
-      dateDiv.style.visibility = 'visible';
+      dateDiv.style.display = 'flex';
       console.log(this.progAnomalyType);
       if(this.progAnomalyType === 'lOP')
       {
         const dateToButton = document.getElementById('dateTo');
-        if(dateToButton)  {dateToButton.style.visibility = 'hidden';}
+        if(dateToButton)  {dateToButton.style.display = 'none';}
       }
       else
       {
         const dateToButton = document.getElementById('dateTo');
-      if(dateToButton)  {dateToButton.style.visibility = 'visible';}
+        if(dateToButton)  {dateToButton.style.display = 'inline-block';}
       }
+    }
+    const submitButton = document.getElementById('submitButton');
+    if(submitButton) {
+      submitButton.style.display = 'inline-block';
     }
   }
   async sendProgAnomaly()

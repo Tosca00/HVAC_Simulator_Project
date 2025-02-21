@@ -16,7 +16,7 @@ export enum Mode {
 export class UserFormComponent implements OnInit {
   
   temperature: number = 0;
-  date: string = new Date().toISOString().substring(0, 16);
+  date: string = new Date().toISOString().slice(0, 19);
   
 
   isOn = false;

@@ -24,7 +24,7 @@ class Simulation:
     debugLists = False
     debugGraphs = False
 
-    def run_simulation_realtime(self, hvac: HVAC, room: Room, weather: Weather, stop_signal: threading.Event):
+    async def run_simulation_realtime(self, hvac: HVAC, room: Room, weather: Weather, stop_signal: threading.Event, sendRowToClient):
         room.setTemperature(weather.getDegrees())
         # at start time hvac and room temperature are the same
         hvac.setTemperature_Internal(room.temperature)
@@ -61,6 +61,8 @@ class Simulation:
                 startTime = datetime.datetime.now(clock_tz).replace(microsecond=0, tzinfo=None)
                 agent.tick()
                 df = pd.concat([df, pd.DataFrame([[agent.classes_dict['HVAC'].getTemperature_Internal(), agent.classes_dict['HVAC'].getSetpoint(), agent.classes_dict['HVAC'].getPowerConsumption(), startTime, agent.classes_dict['HVAC'].getHVACMode(), weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode', "Ambient_Temperature"])], ignore_index=True)
+                await sendRowToClient(f"{agent.classes_dict['HVAC'].getTemperature_Internal()},{agent.classes_dict['HVAC'].getSetpoint()},{agent.classes_dict['HVAC'].getPowerConsumption()},{startTime},{agent.classes_dict['HVAC'].getHVACMode()},{weather.getDegrees()}")
+                
                 time.sleep(1)
                 print(f"efficiency: {agent.classes_dict['HVAC'].efficiency}")
             except KeyboardInterrupt:

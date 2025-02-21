@@ -123,4 +123,49 @@ export class HttpService {
     return await httpService.post('/simulateRealTime');
   }
 
+  private socket!: WebSocket;
+
+  connectWebSocket(url: string) {
+    this.socket = new WebSocket(url);
+
+    this.socket.onopen = (event) => {
+      console.log('WebSocket is open:', event);
+      return event;
+    };
+
+    this.socket.onmessage = (event) => {
+      console.log('WebSocket message:', event.data);
+      const resutlElement = document.getElementById('result');
+      if (resutlElement) {
+        resutlElement.innerHTML = event.data;
+      }
+      return event.data;
+    };
+
+    this.socket.onclose = (event) => {
+      console.log('WebSocket is closed:', event);
+      return event;
+    };
+
+    this.socket.onerror = (event) => {
+      console.error('WebSocket error:', event);
+      return event;
+    };
+
+    return this.socket;
+  }
+
+  sendMessage(message: string) {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(message);
+    } else {
+      console.error('WebSocket is not open. Ready state:', this.socket.readyState);
+    }
+  }
+
+  closeWebSocket() {
+    if (this.socket) {
+      this.socket.close();
+    }
+  }
 }

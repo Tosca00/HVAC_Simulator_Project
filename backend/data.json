@@ -1,1 +1,1 @@
-{"responses": [{"date": "2025-02-20 14:40", "temperature": 0, "selectedMode": "NO_MODE", "isOn": "OFF"}, {"date": "2025-02-20 14:40", "temperature": 0, "selectedMode": "NO_MODE", "isOn": "OFF"}], "weatherTemperature": 0, "room": {"height": 0, "width": 0, "length": 0}, "simulationType": 0}
+{"hvac_settings": {"setpoint": 22, "isOn": "ON", "selectedMode": "HEATING"}, "room": {"height": 2, "width": 2, "length": 2}, "weatherTemperature": 20, "simulationType": 1}

@@ -74,8 +74,9 @@ export class RemoteComponent implements OnInit {
     console.log('Show Graph is still under construction');
     this.p.textContent = 'Show Graph is still under construction.';
     this.p.style.display = 'initial';
-    const formButtonsAndManagement = document.getElementById('formButtonsAndManagement');
+    const formButtonsAndManagement = document.getElementById('graph');
     if (formButtonsAndManagement) {
+      formButtonsAndManagement.style.display = 'initial';
       formButtonsAndManagement.appendChild(this.p);
     }
   }
@@ -152,6 +153,7 @@ export class RemoteComponent implements OnInit {
   }
 
   async manageSubmit() {
+    console.log('Manage Submit'+ this.isRealTimeSimStarted);
     if(this.sim_type == 0) 
       {
         await this.createFormResponse();
@@ -183,6 +185,7 @@ export class RemoteComponent implements OnInit {
     simulationType: this.sim_type
   };
     try {
+      console.log('FormUpdate:');
       const result = await this.http.createFormUpdateRealTime(FormUpdate);
       console.log(result);
     } catch (error) {
@@ -190,6 +193,8 @@ export class RemoteComponent implements OnInit {
     }
   }
 
+
+  private streamData: WebSocket | null = null;
   async createFormResponceRealTime() 
   {
     const FormResponce = {hvac_settings: 
@@ -206,11 +211,12 @@ export class RemoteComponent implements OnInit {
     simulationType: this.sim_type
   };
     try {
+      const websocketUrl = 'http://localhost:8001/ws';
+      this.streamData = this.http.connectWebSocket(websocketUrl);
       this.isRealTimeSimStarted = true;
       const result = await this.http.createFormResponseRealTime(FormResponce);
       const simulationResult = await this.http.callSimulationRealTime();
       console.log(simulationResult);
-      this.isRealTimeSimStarted = false;
     } catch (error) {
       console.error('Error in form response:', error);
     }

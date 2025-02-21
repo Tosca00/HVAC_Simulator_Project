@@ -12,7 +12,9 @@ import threading
 import random
 import pytz
 import datetime, timedelta
+import asyncio
 import time
+from fastapi import WebSocket
 
 app = FastAPI()
 
@@ -56,13 +58,14 @@ hvac: HVAC = HVAC()
 
 @app.post("/changeHVACsettings")
 def change_settings(data: dict):
-    hvac_settings = data.get("hvac_settings")
-    setpoint = hvac_settings["setpoint"]
-    isOn = hvac_settings["isOn"]
-    mode = hvac_settings["selectedMode"]
-    arrayParam = []
-    arrayParam.append([0,setpoint, mode, isOn])
-    hvac.setHvac(arrayParam,0)
+    if websocket:
+        hvac_settings = data.get("hvac_settings")
+        setpoint = hvac_settings["setpoint"]
+        isOn = hvac_settings["isOn"]
+        mode = hvac_settings["selectedMode"]
+        arrayParam = []
+        arrayParam.append([0,setpoint, mode, isOn])
+        hvac.setHvac(arrayParam,0)
     return {"message": "HVAC settings changed successfully"}
 
 @app.post("/setupRealTime")
@@ -210,30 +213,44 @@ async def save_data():
 interrupt_signal = threading.Event()
 
 @app.post("/interrupt")
-def interrupt_simulation(data: dict):
+def interrupt_simulation():
     global interrupt_signal
     interrupt_signal.set()
     return {"message": "Simulation interrupted"}
 
-@app.post("/simulateRealTime")
-def run_simulation():
+
+async def run_simulationRealTime():
     sim = Simulation()
     initializeRoom()
     initializeWeather()
     interrupt_signal.clear()
-    sim.run_simulation_realtime(hvac, room, weather, interrupt_signal)
-
+    try:
+        if(isWebSocketOpen()is False):
+            return {"message": "Websocket connection is not open, please open the connection and try again","isResCorrect": False}
+        await sim.run_simulation_realtime(hvac, room, weather, interrupt_signal,sendRowToClient)
+    except Exception as e:
+        return {"message": f"{e}"}
     # Read the content of the CSV file
+    await closeSocket()
     csv_content = []
     with open("./src/data_realtime.csv", "r") as csvfile:
         csvreader = csv.reader(csvfile)
         for row in csvreader:
             csv_content.append(row)
-    
     return {"message": "Simulation completed successfully", "csv_content": csv_content}
 
+
+@app.post("/simulateRealTime")
+def simulationRoute():
+    thread = threading.Thread(target=asyncio.run, args=(run_simulationRealTime(),))
+    thread.start()
+    return {"message": "Simulation started successfully"}
+
+async def closeSocket():
+    await websocket.close()
+
 @app.post("/simulateParameterized")
-def run_simulation():
+def run_simulationParam():
     sim = Simulation()
     initializeRoom()
     initializeWeather()
@@ -250,3 +267,27 @@ def run_simulation():
             csv_content.append(row)
     
     return {"message": "Simulation completed successfully, download data using the following button", "csv_content": csv_content, "isResCorrect": True}
+
+websocket : WebSocket = None
+@app.websocket("/ws")
+async def websocket_endpoint(stream: WebSocket):
+    global websocket
+    websocket = stream
+    await websocket.accept()
+    await websocket.send_text("Connection accepted")
+    try:
+        data = await websocket.receive_text()
+        #await websocket.send_text(f"Message text was: {data}")
+    except Exception as e:
+        print(f"Connection closed: {e}")
+    finally:
+        await websocket.close()
+
+def isWebSocketOpen():
+    return websocket is not None
+
+
+async def sendRowToClient(message: str) -> None:
+    print(f"Sending message: {message}")
+    await websocket.send_text(message)
+    

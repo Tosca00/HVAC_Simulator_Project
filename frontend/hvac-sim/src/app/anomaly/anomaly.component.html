@@ -10,31 +10,33 @@
             Press the button to activate the anomaly after the simulation has started.<br>
         </span>
     </p>
-    <div *ngIf="sim_type == 0">
+    <div *ngIf="sim_type == 0" class="anomalyButtons">
         <button mat-raised-button (click)="showDateDiv($event)" id="efficiency">Efficiency Anomaly</button>
         <button mat-raised-button (click)="showDateDiv($event)" id="threshold">Threshold Anomlay</button>
         <button mat-raised-button (click)="showDateDiv($event)" id="lOP">Loss Of Power</button>
         <button mat-raised-button (click)="showDateDiv($event)" id="fault">Fault</button>
     </div>
     
-    <div *ngIf="sim_type == 1">
+    <div *ngIf="sim_type == 1" class="anomalyButtons">
         <button mat-raised-button (click)="efficiency()">Efficiency Anomaly</button>
         <button mat-raised-button (click)="threshold()">Threshold Anomlay</button>
         <button mat-raised-button (click)="lossOfPower()">Loss Of Power</button>
         <button mat-raised-button (click)="fault()">Fault</button>
     </div>
+
+    <div id="dateDiv">
+        <mat-form-field>
+            <mat-label>Date from</mat-label>
+                <input matInput [(ngModel)]="dateFrom" type="datetime-local" step="1" required>
+        </mat-form-field>
+        <mat-form-field id="dateTo">
+            <mat-label>Date to</mat-label>
+                <input matInput [(ngModel)]="dateTo" type="datetime-local" step="1" required>
+        </mat-form-field>
+    </div>
+    <button id="submitButton" style="display: none;"mat-raised-button (click)="sendProgAnomaly()">Submit</button>
 </div>
 
 
-<div id="dateDiv" style="visibility: hidden;">
-    <mat-form-field>
-        <mat-label>Date from</mat-label>
-            <input matInput [(ngModel)]="dateFrom" type="datetime-local" step="1" required>
-    </mat-form-field>
-    <mat-form-field id="dateTo">
-        <mat-label>Date to</mat-label>
-            <input matInput [(ngModel)]="dateTo" type="datetime-local" step="1" required>
-    </mat-form-field>
-    <button mat-raised-button (click)="sendProgAnomaly()">Submit</button>
-</div>
+
 
