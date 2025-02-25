@@ -11,3 +11,17 @@
     display: flex;
     column-gap: 10px;
 }
+
+#resultContainer p
+{
+    background-color: #e2dddd;
+    border : 5px solid black;
+    border-radius: 5%;
+}
+
+#result
+{
+    background-color: #e2dddd;
+    border : 5px solid black;
+    border-radius: 5%;  
+}

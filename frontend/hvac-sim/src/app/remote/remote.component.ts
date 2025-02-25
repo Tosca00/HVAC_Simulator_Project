@@ -70,6 +70,17 @@ export class RemoteComponent implements OnInit {
     this.p.textContent = '';
   }
 
+  AddRealTimeResultRow(message: MessageEvent<any>)
+  {
+    const resParagraph = this.renderer.createElement('p');
+    const resText = this.renderer.createText(message.data);
+    this.renderer.appendChild(resParagraph, resText);
+    const containerForm = document.getElementById('formContainer');
+    if (containerForm) {
+      this.renderer.appendChild(containerForm, resParagraph);
+    }
+  }
+
   showGraph() {
     console.log('Show Graph is still under construction');
     this.p.textContent = 'Show Graph is still under construction.';

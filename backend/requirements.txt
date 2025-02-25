@@ -8,3 +8,4 @@ timedelta==2020.12.3
 redis==3.5.3
 types-redis==3.5.3
 uvicorn==0.15.0
+paho-mqtt==1.6.1

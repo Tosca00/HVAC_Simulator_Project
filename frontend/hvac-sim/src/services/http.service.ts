@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import axios from 'axios';
 import { Mode } from 'fs';
+import { RemoteComponent } from '../app/remote/remote.component';
 
 export const httpService = axios.create({
   baseURL: 'http://localhost:8001'
@@ -11,7 +12,9 @@ export const httpService = axios.create({
 })
 export class HttpService {
 
-  constructor() { }
+  constructor() {
+    this.resultPar.id = 'result';
+   }
 
   async createFormResponse(formResponses: {
     responses: {
@@ -123,8 +126,9 @@ export class HttpService {
     return await httpService.post('/simulateRealTime');
   }
 
-  private socket!: WebSocket;
 
+  private socket!: WebSocket;
+  private resultPar: HTMLElement = document.createElement('p');
   connectWebSocket(url: string) {
     this.socket = new WebSocket(url);
 
@@ -135,11 +139,34 @@ export class HttpService {
 
     this.socket.onmessage = (event) => {
       console.log('WebSocket message:', event.data);
-      const resutlElement = document.getElementById('result');
-      if (resutlElement) {
-        resutlElement.innerHTML = event.data;
+      this.resultPar.id = 'result';
+      this.resultPar.style.border = '1px solid #ccc';
+      this.resultPar.style.backgroundColor = '#f9f9f9';
+      this.resultPar.style.borderRadius = '5px';
+      this.resultPar.style.padding = '10px';
+      this.resultPar.innerHTML = '';
+      const resultDiv = document.getElementById('resultContainer');
+      if (resultDiv) 
+      {
+        const parsedData = event.data.split(',');
+        console.log(parsedData);
+        let tagArr = ['<b>Temperature: </b>', 'C <b> Setpoint: </b> ', 'C <b> Consuption: </b> ', ' W<b> Time: </b> ','<b> Mode: </b> ','<b> Ambient Temperature: </b> ','<b> Status: </b>'];
+        let i = 0;
+        parsedData.forEach((data: string) => {
+          if(i == 4)
+          {
+            data = data.split('.')[1];
+          }
+          if(i == 6)
+          {
+            data = data.split('.')[1];
+          }
+          this.resultPar.innerHTML += tagArr[i] + data;
+          i++;
+        });
+        resultDiv.appendChild(this.resultPar);
       }
-      return event.data;
+      return event;
     };
 
     this.socket.onclose = (event) => {

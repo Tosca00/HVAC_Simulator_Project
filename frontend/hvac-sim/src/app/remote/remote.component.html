@@ -28,9 +28,9 @@
         Otherwise the system will be set inactive.<br>
     </span>
     </p>
-    <div class="formContainer">
+    <div class="formContainer" id="resultContainer">
         <app-hvac-realtime-form [style.display]="sim_type == 1 ? 'initial' : 'none'"></app-hvac-realtime-form>
-        <button mat-raised-button (click)="manageSubmit()" [style.display]="(sim_type==1) ? 'initial' : 'none'">Submit</button> 
+        <button mat-raised-button (click)="manageSubmit()" [style.display]="(sim_type==1) ? 'initial' : 'none'" style="margin-top: 5px;">Submit</button> 
     </div>
     <div class="rows-int">
         <button mat-raised-button (click)="AddFormRow()" id="addRowButton" [style.display]="sim_type == 0 ? 'initial' : 'none'">Add Row</button>

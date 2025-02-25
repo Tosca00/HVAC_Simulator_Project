@@ -15,12 +15,11 @@ import datetime, timedelta
 import asyncio
 import time
 from fastapi import WebSocket
+import requests
+from src.MQTT_Client.mqtt_publish import *
+
 
 app = FastAPI()
-
-#Define the parameterized array
-#param_arr: np.array = np.empty((0, 4), dtype=object)
-
 
 
 origins = ["*"]
@@ -227,7 +226,7 @@ async def run_simulationRealTime():
     try:
         if(isWebSocketOpen()is False):
             return {"message": "Websocket connection is not open, please open the connection and try again","isResCorrect": False}
-        await sim.run_simulation_realtime(hvac, room, weather, interrupt_signal,sendRowToClient)
+        await sim.run_simulation_realtime(hvac, room, weather, interrupt_signal,sendRowToClient,send_post_call)
     except Exception as e:
         return {"message": f"{e}"}
     # Read the content of the CSV file
@@ -274,10 +273,8 @@ async def websocket_endpoint(stream: WebSocket):
     global websocket
     websocket = stream
     await websocket.accept()
-    await websocket.send_text("Connection accepted")
     try:
         data = await websocket.receive_text()
-        #await websocket.send_text(f"Message text was: {data}")
     except Exception as e:
         print(f"Connection closed: {e}")
     finally:
@@ -290,4 +287,12 @@ def isWebSocketOpen():
 async def sendRowToClient(message: str) -> None:
     print(f"Sending message: {message}")
     await websocket.send_text(message)
+    
+
+async def send_post_call(data: dict):
+    if requests.post("http://0.0.0.0:8004", json=data) != 200:
+        print("Post call failed")
+    else:
+        print("Post call sent successfully")
+    return {"message": "Post call sent successfully"}
     
