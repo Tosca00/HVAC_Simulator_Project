@@ -231,6 +231,7 @@ async def run_simulationRealTime():
     
     # Read the content of the CSV file
     #await closeSocket()
+    disconnectClient()
     csv_content = []
     with open("./src/data_realtime.csv", "r") as csvfile:
         csvreader = csv.reader(csvfile)
@@ -290,6 +291,6 @@ async def sendRowToClient(message: str) -> None:
     await websocket.send_text(message)
     
 
-async def send_post_call(data: dict):
-    publish_data(data)
+async def send_post_call(data: dict,clock):
+    publish_data(data,clock)
     

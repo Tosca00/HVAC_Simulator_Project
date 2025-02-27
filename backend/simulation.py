@@ -62,7 +62,7 @@ class Simulation:
                 print("here")
                 await sendRowToClient(f"{agent.classes_dict['HVAC'].getTemperature_Internal()},{agent.classes_dict['HVAC'].getSetpoint()},{agent.classes_dict['HVAC'].getPowerConsumption()},{startTime},{agent.classes_dict['HVAC'].getHVACMode()},{weather.getDegrees()},{agent.classes_dict['HVAC'].state}")
                 
-                await sendPostCall(agent)
+                await sendPostCall(agent,startTime)
                 time.sleep(1)
                 print(f"efficiency: {agent.classes_dict['HVAC'].efficiency}")
             except KeyboardInterrupt:
