@@ -36,6 +36,6 @@ async def startup_event():
     loop = asyncio.get_event_loop()
     loop.run_in_executor(None, start_mqtt)
 
-@app.get("/")
+@app.post("/")
 async def read_root():
     return {"message": "MQTT Subscriber is running"}

@@ -26,8 +26,15 @@ export class AnomalyComponent implements OnInit {
     console.log('sim_type: ' + this.sim_type);
   }
 
-  constructor(private http: HttpService,private rend: Renderer2) { }
+  constructor(private http: HttpService,private rend: Renderer2) 
+  { 
+    this.effAnomalyText.style.display = 'none';
+    this.thresholdAnomalyText.style.display = 'none';
+    this.faultAnomalyText.style.display = 'none';
+    this.lossOfPowerAnomalyText.style.display = 'none';
+  }
 
+  effAnomalyText : HTMLElement = document.createElement('p');
   async efficiency()
   {
     if(!this.isEffset) 
@@ -35,12 +42,23 @@ export class AnomalyComponent implements OnInit {
     const response = await this.http.sendEffAnomaly();
     this.isEffset = true;
     console.log(response.data.message);
+    this.effAnomalyText.textContent = response.data.message;   
     }
     else
     {
       const response = await this.http.restoreEffAnomaly();
       this.isEffset = false;
       console.log(response.data.message);
+      this.effAnomalyText.textContent = response.data.message;   
+    }
+    this.effAnomalyText.innerHTML += '<br>';
+    const anomalyDiv = document.getElementById('efficiencyText');
+    if(anomalyDiv) 
+    {
+      const anomaliesLogText = document.getElementById('anomaliesLogText');
+      if(anomaliesLogText) {anomaliesLogText.style.display = 'initial';}
+      this.effAnomalyText.style.display = 'initial';
+      anomalyDiv.appendChild(this.effAnomalyText);
     }
   }
 
@@ -49,6 +67,8 @@ export class AnomalyComponent implements OnInit {
     console.log('efficiency_prog');
   }
 
+
+  thresholdAnomalyText : HTMLElement = document.createElement('p');
   async threshold()
   {
     if(!this.isThreshset) 
@@ -56,14 +76,24 @@ export class AnomalyComponent implements OnInit {
     const response = await this.http.sendThreshAnomaly();
     this.isThreshset = true;
     console.log(response.data.message);
+    this.thresholdAnomalyText.textContent = response.data.message;
     }
     else
     {
       const response = await this.http.restoreThreshAnomaly();
       this.isThreshset = false;
       console.log(response.data.message);
+      this.thresholdAnomalyText.textContent = response.data.message;
     }
-
+    this.thresholdAnomalyText.innerHTML += '<br>';
+    const anomalyDiv = document.getElementById('thresholdText');
+    if(anomalyDiv) 
+    {
+      const anomaliesLogText = document.getElementById('anomaliesLogText');
+      if(anomaliesLogText) {anomaliesLogText.style.display = 'initial';}
+      this.thresholdAnomalyText.style.display = 'initial';
+      anomalyDiv.appendChild(this.thresholdAnomalyText);
+    }
   }
 
   async threshold_prog()
@@ -71,10 +101,23 @@ export class AnomalyComponent implements OnInit {
     console.log('threshold_prog');
   }
 
+  lossOfPowerAnomalyText : HTMLElement = document.createElement('p');
   async lossOfPower()
   {
+    this.lossOfPowerAnomalyText.textContent = 'Loss of Power Anomaly is active, it will end automatically in 30 seconds.';
+    this.lossOfPowerAnomalyText.innerHTML += '<br>';
+    const anomalyDiv = document.getElementById('LOPText');
+    if(anomalyDiv) 
+    {
+      const anomaliesLogText = document.getElementById('anomaliesLogText');
+      if(anomaliesLogText) {anomaliesLogText.style.display = 'initial';}
+      this.lossOfPowerAnomalyText.style.display = 'initial';
+      anomalyDiv.appendChild(this.lossOfPowerAnomalyText);
+    }
     const response = await this.http.lossOfPowerAnomaly();
     console.log(response.data.message);
+    this.lossOfPowerAnomalyText.textContent = response.data.message;
+    this.lossOfPowerAnomalyText.innerHTML += '<br>';
   }
 
   async lossOfPower_prog()
@@ -82,19 +125,31 @@ export class AnomalyComponent implements OnInit {
     console.log('lossOfPower_prog');
   }
 
+  faultAnomalyText : HTMLElement = document.createElement('p');
   async fault()
   {
     if(!this.isFaultset) 
     {
-    const response = await this.http.sendFaultAnomaly();
-    this.isFaultset = true;
-    console.log(response.data.message);
+      const response = await this.http.sendFaultAnomaly();
+      this.isFaultset = true;
+      console.log(response.data.message);
+      this.faultAnomalyText.textContent = response.data.message;
     }
     else
     {
       const response = await this.http.restoreFaultAnomaly();
       this.isFaultset = false;
       console.log(response.data.message);
+      this.faultAnomalyText.textContent = response.data.message;
+    }
+    this.faultAnomalyText.innerHTML += '<br>';
+    const anomalyDiv = document.getElementById('FaultText');
+    if(anomalyDiv) 
+    {
+      const anomaliesLogText = document.getElementById('anomaliesLogText');
+      if(anomaliesLogText) {anomaliesLogText.style.display = 'initial';}
+      this.faultAnomalyText.style.display = 'initial';
+      anomalyDiv.appendChild(this.faultAnomalyText);
     }
   }
 

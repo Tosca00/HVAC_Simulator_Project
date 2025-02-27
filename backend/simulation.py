@@ -62,7 +62,7 @@ class Simulation:
                 print("here")
                 await sendRowToClient(f"{agent.classes_dict['HVAC'].getTemperature_Internal()},{agent.classes_dict['HVAC'].getSetpoint()},{agent.classes_dict['HVAC'].getPowerConsumption()},{startTime},{agent.classes_dict['HVAC'].getHVACMode()},{weather.getDegrees()},{agent.classes_dict['HVAC'].state}")
                 
-                sendPostCall(agent)
+                await sendPostCall(agent)
                 time.sleep(1)
                 print(f"efficiency: {agent.classes_dict['HVAC'].efficiency}")
             except KeyboardInterrupt:
@@ -134,7 +134,6 @@ class Simulation:
                 else:
                     hvac.Power_Watt = power_aux
                     progLOP_canStart = False
-                print(f"current time : {startTime} , efficiency : {agent.classes_dict['HVAC'].efficiency}")       
                 agent.tick()
                 df = pd.concat([df, pd.DataFrame([[agent.classes_dict['HVAC'].getTemperature_Internal(), agent.classes_dict['HVAC'].getSetpoint(), agent.classes_dict['HVAC'].getPowerConsumption(), startTime, agent.classes_dict['HVAC'].getHVACMode(), weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode', "Ambient_Temperature"])], ignore_index=True)
                 

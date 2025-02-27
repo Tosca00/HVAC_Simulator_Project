@@ -13,9 +13,10 @@ services:
       - ./frontend:/app
     depends_on:
     - backend
-  mqtt_server:
-    build: ./mqttServer
-    ports: 
-      - "8004:8004"
+  mosquitto:
+    image: eclipse-mosquitto
+    ports:
+      - "1883:1883"
     volumes:
-      - ./mqttServer:/app
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    

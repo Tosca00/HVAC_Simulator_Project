@@ -139,6 +139,13 @@ export class RemoteComponent implements OnInit {
     };
 
     try {
+      let offlineSimLoading_p = document.createElement('p');
+      const downloadDiv = document.getElementById('submitAndDownloadDiv');
+      offlineSimLoading_p.textContent = 'Loading...';
+      if(downloadDiv)
+      {
+        downloadDiv.appendChild(offlineSimLoading_p);
+      }
       const result = await this.http.createFormResponse(formResponses);
       const simulationResult = await this.http.callSimulationParameterized();
       console.log(simulationResult);
@@ -150,12 +157,15 @@ export class RemoteComponent implements OnInit {
       
       this.p.textContent = simulationResult.data.message;
       document.body.appendChild(this.p);
-
       if(simulationResult.data.isResCorrect)
       {
-        this.downloadButton.textContent = 'Download Results';
-        this.downloadButton.onclick = this.DownloadResults.bind(this);
-        document.body.appendChild(this.downloadButton);
+        if(downloadDiv)
+        {
+          downloadDiv.removeChild(offlineSimLoading_p);
+          this.downloadButton.textContent = 'Download Results';
+          this.downloadButton.onclick = this.DownloadResults.bind(this);
+          downloadDiv.appendChild(this.downloadButton);
+        }
       }
       
     } catch (error) {

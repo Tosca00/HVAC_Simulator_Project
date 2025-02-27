@@ -35,6 +35,14 @@
         </mat-form-field>
     </div>
     <button id="submitButton" style="display: none;"mat-raised-button (click)="sendProgAnomaly()">Submit</button>
+    <div *ngIf="sim_type == 1" id="anomalySettersTexts">
+        <h3 id="anomaliesLogText" style="display: none;">Anomalies log : <br></h3>
+        <p id="efficiencyText"></p>
+        <p id="thresholdText"></p>
+        <p id="LOPText"></p>
+        <p id="FaultText"></p>
+
+    </div>
 </div>
 
 

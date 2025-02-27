@@ -82,22 +82,22 @@ def save_data_realtime(data: dict):
 @app.post("/restoreEffAnomaly")
 def restoreEffAnomaly():
     hvac.efficiency = 0.98
-    return {"message": "Efficiency anomaly restored successfully"}
+    return {"message": "Efficiency anomaly has been disabled."}
 
 @app.post("/efficiencyAnomaly")
 def efficiencyAnomaly():
     hvac.efficiency = 0.2
-    return {"message": "Efficiency anomaly set successfully"}
+    return {"message": "Efficiency anomaly is active."}
 
 @app.post("/thresholdAnomaly")
 def thresholdAnomaly():
     hvac.tempDiff = 4
-    return {"message": f"Threshold anomaly set to {hvac.tempDiff}"}
+    return {"message": f"Threshold anomaly set to {hvac.tempDiff}."}
 
 @app.post("/restoreThreshAnomaly")
 def restoreThreshAnomaly():
     hvac.tempDiff = 2
-    return {"message": f"Threshold anomaly restored to {hvac.tempDiff}"}
+    return {"message": f"Threshold anomaly restored to original value {hvac.tempDiff}."}
 
 
 @app.post("/lossOfPowerAnomaly")
@@ -182,12 +182,12 @@ def applyAnomlayProg(isAnomalyActive: bool):
 @app.post("/restoreFaultAnomaly")
 def restoreFaultAnomaly():
     hvac.faulty = False
-    return {"message": f"Fault anomaly restored to {hvac.faulty}"}
+    return {"message": f"Fault anomaly has been disabled."}
 
 @app.post("/faultAnomaly")
 def faultAnomaly():
     hvac.faulty = True
-    return {"message": f"Fault anomaly set to {hvac.faulty}"}
+    return {"message": f"Fault anomaly is active."}
 
 @app.post("/setupParameterized")
 def save_data_param(data: dict):
@@ -223,14 +223,14 @@ async def run_simulationRealTime():
     initializeRoom()
     initializeWeather()
     interrupt_signal.clear()
-    try:
-        if(isWebSocketOpen()is False):
-            return {"message": "Websocket connection is not open, please open the connection and try again","isResCorrect": False}
-        await sim.run_simulation_realtime(hvac, room, weather, interrupt_signal,sendRowToClient,send_post_call)
-    except Exception as e:
-        return {"message": f"{e}"}
+    
+    await async_connectClient()
+    if(isWebSocketOpen()is False):
+        return {"message": "Websocket connection is not open, please open the connection and try again","isResCorrect": False}
+    await sim.run_simulation_realtime(hvac, room, weather, interrupt_signal,sendRowToClient,send_post_call)
+    
     # Read the content of the CSV file
-    await closeSocket()
+    #await closeSocket()
     csv_content = []
     with open("./src/data_realtime.csv", "r") as csvfile:
         csvreader = csv.reader(csvfile)
@@ -276,8 +276,9 @@ async def websocket_endpoint(stream: WebSocket):
     try:
         data = await websocket.receive_text()
     except Exception as e:
-        print(f"Connection closed: {e}")
+        print(f"Connection closed in exception: {e}")
     finally:
+        print(f"Connection closed correctly")
         await websocket.close()
 
 def isWebSocketOpen():
@@ -290,9 +291,5 @@ async def sendRowToClient(message: str) -> None:
     
 
 async def send_post_call(data: dict):
-    if requests.post("http://0.0.0.0:8004", json=data) != 200:
-        print("Post call failed")
-    else:
-        print("Post call sent successfully")
-    return {"message": "Post call sent successfully"}
+    publish_data(data)
     

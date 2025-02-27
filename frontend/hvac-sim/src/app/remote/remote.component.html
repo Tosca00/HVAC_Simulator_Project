@@ -39,7 +39,9 @@
         <button mat-raised-button (click)="interruptSim()" [style.display]="sim_type == 1 ? 'initial' : 'none'">interrupt</button>
     </div>
 </div>
-<button mat-raised-button (click)="manageSubmit()" [style.display]="(userFormComponents.length >= 2) ? 'initial' : 'none'">Submit</button>   
+<div id = "submitAndDownloadDiv">
+    <button mat-raised-button (click)="manageSubmit()" [style.display]="(userFormComponents.length >= 2) ? 'initial' : 'none'">Submit</button>    
+</div>
 <div id="graph" style="display: none;">
 </div>
 <app-anomaly [sim_type]="sim_type"></app-anomaly>
