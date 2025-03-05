@@ -62,9 +62,23 @@ def change_settings(data: dict):
         setpoint = hvac_settings["setpoint"]
         isOn = hvac_settings["isOn"]
         mode = hvac_settings["selectedMode"]
+        fanMode = hvac_settings["selectedFanMode"]
         arrayParam = []
         arrayParam.append([0,setpoint, mode, isOn])
         hvac.setHvac(arrayParam,0)
+        if fanMode != "AUTO":
+            hvac.isFanAuto = False
+        else:
+            hvac.isFanAuto = True
+        
+        if hvac.isFanAuto == False:
+            enumFan = HVAC.HVAC_AirFlowLevel.LOW
+            if fanMode == "HIGH":
+                enumFan = HVAC.HVAC_AirFlowLevel.HIGH
+            elif fanMode == "MEDIUM":
+                enumFan = HVAC.HVAC_AirFlowLevel.MEDIUM
+            hvac.changeFanPower(enumFan)
+        
     return {"message": "HVAC settings changed successfully"}
 
 @app.post("/setupRealTime")

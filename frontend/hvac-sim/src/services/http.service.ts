@@ -31,7 +31,8 @@ export class HttpService {
     {hvac_settings: 
       {setpoint : number, 
       isOn : string, 
-      selectedMode : Mode
+      selectedMode : Mode,
+      selectedFanMode: string
       },
     room: {
       height: number,
@@ -100,7 +101,8 @@ export class HttpService {
     {hvac_settings: 
       {setpoint : number, 
       isOn : string, 
-      selectedMode : Mode
+      selectedMode : Mode,
+      selectedFanMode: string
       },
     room: {
       height: number,
@@ -150,7 +152,7 @@ export class HttpService {
       {
         const parsedData = event.data.split(',');
         console.log(parsedData);
-        let tagArr = ['<b>Temperature: </b>', 'C <b> Setpoint: </b> ', 'C <b> Consuption: </b> ', ' W<b> Time: </b> ','<b> Mode: </b> ','<b> Ambient Temperature: </b> ','<b> Status: </b>'];
+        let tagArr = ['<b>Temperature: </b>', 'C <b> Setpoint: </b> ', 'C <b> Consuption: </b> ', ' W<b> Time: </b> ','<b> Mode: </b> ','<b> Ambient Temperature: </b> ','<b> Status: </b>', '<b> Fan Mode: </b>'];
         let i = 0;
         parsedData.forEach((data: string) => {
           if(i == 4)

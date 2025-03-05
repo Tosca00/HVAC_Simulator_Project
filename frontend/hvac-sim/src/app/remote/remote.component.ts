@@ -195,7 +195,8 @@ export class RemoteComponent implements OnInit {
     const FormUpdate = {hvac_settings: 
     {setpoint : this.hvacRealtimeForm.setpoint, 
     isOn : this.hvacRealtimeForm.isOn? "ON" : "OFF", 
-    selectedMode : this.hvacRealtimeForm.modes
+    selectedMode : this.hvacRealtimeForm.modes,
+    selectedFanMode : this.hvacRealtimeForm.fanModes
     },
     room: {
       height: this.weatherRoom.height,
@@ -221,7 +222,8 @@ export class RemoteComponent implements OnInit {
     const FormResponce = {hvac_settings: 
     {setpoint : this.hvacRealtimeForm.setpoint, 
     isOn : this.hvacRealtimeForm.isOn? "ON" : "OFF", 
-    selectedMode : this.hvacRealtimeForm.modes
+    selectedMode : this.hvacRealtimeForm.modes,
+    selectedFanMode : this.hvacRealtimeForm.fanModes
     },
     room: {
       height: this.weatherRoom.height,

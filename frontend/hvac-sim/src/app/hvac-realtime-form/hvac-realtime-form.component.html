@@ -17,6 +17,19 @@
         </mat-select>
       </mat-form-field>
     </div>
+
+    <div class="form-group">
+      <label for="fanMode">Fan Control :</label>
+      <mat-form-field appearance="outline">
+        <mat-label style="color: black;">Select Mode</mat-label>
+        <mat-select [(ngModel)]="fanModes" id="fanMode">
+          <mat-option value="HIGH">high</mat-option>
+          <mat-option value="MEDIUM">medium</mat-option>
+          <mat-option value="LOW">low</mat-option>
+          <mat-option value="AUTO">auto</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
   
     <div class="form-group">
       <label for="status">STATUS :</label>

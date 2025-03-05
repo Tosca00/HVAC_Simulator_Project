@@ -28,7 +28,7 @@ class Simulation:
         room.setTemperature(weather.getDegrees())
         # at start time hvac and room temperature are the same
         hvac.setTemperature_Internal(room.temperature)
-        df = pd.DataFrame(columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode', "Ambient_Temperature"])
+        df = pd.DataFrame(columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode', "Ambient_Temperature", "Fan_Level"])
         # initialize clock for simulation
         clock_tz = pytz.timezone('Europe/Rome')
         rome_date = datetime.datetime.now(clock_tz)
@@ -50,21 +50,32 @@ class Simulation:
         setpoint = hvac_settings["setpoint"]
         isOn = hvac_settings["isOn"]
         mode = hvac_settings["selectedMode"]
+        fanMode = hvac_settings["selectedFanMode"]
         arrayParam = []
         arrayParam.append([0,setpoint, mode, isOn])
 
         hvac.setHvac(arrayParam,0)
+        if fanMode != "AUTO":
+            agent.classes_dict['HVAC'].isFanAuto = False
+        
+        enumFan = HVAC.HVAC_AirFlowLevel.LOW
+        if fanMode == "HIGH":
+            enumFan = HVAC.HVAC_AirFlowLevel.HIGH
+        elif fanMode == "MEDIUM":
+            enumFan = HVAC.HVAC_AirFlowLevel.MEDIUM
+        
+        agent.classes_dict['HVAC'].changeFanPower(enumFan)
         while not stop_signal.is_set():
             try:
                 startTime = datetime.datetime.now(clock_tz).replace(microsecond=0, tzinfo=None)
                 agent.tick()
-                df = pd.concat([df, pd.DataFrame([[agent.classes_dict['HVAC'].getTemperature_Internal(), agent.classes_dict['HVAC'].getSetpoint(), agent.classes_dict['HVAC'].getPowerConsumption(), startTime, agent.classes_dict['HVAC'].getHVACMode(), weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode', "Ambient_Temperature"])], ignore_index=True)
-                print("here")
-                await sendRowToClient(f"{agent.classes_dict['HVAC'].getTemperature_Internal()},{agent.classes_dict['HVAC'].getSetpoint()},{agent.classes_dict['HVAC'].getPowerConsumption()},{startTime},{agent.classes_dict['HVAC'].getHVACMode()},{weather.getDegrees()},{agent.classes_dict['HVAC'].state}")
+                df = pd.concat([df, pd.DataFrame([[agent.classes_dict['HVAC'].getTemperature_Internal(), agent.classes_dict['HVAC'].getSetpoint(), agent.classes_dict['HVAC'].getPowerConsumption(), startTime, agent.classes_dict['HVAC'].getHVACMode().name, weather.getDegrees(), agent.classes_dict['HVAC'].air_flow_level.name]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode', "Ambient_Temperature","Fan_Level"])], ignore_index=True)
+                #print(f"fan mode: {fanMode} fan auto {agent.classes_dict['HVAC'].isFanAuto} fan level {agent.classes_dict['HVAC'].air_flow_level}")
+                await sendRowToClient(f"{agent.classes_dict['HVAC'].getTemperature_Internal()},{agent.classes_dict['HVAC'].getSetpoint()},{agent.classes_dict['HVAC'].getPowerConsumption()},{startTime},{agent.classes_dict['HVAC'].getHVACMode()},{weather.getDegrees()},{agent.classes_dict['HVAC'].state},{agent.classes_dict['HVAC'].air_flow_level.name}")
                 
                 await sendPostCall(agent,startTime)
                 time.sleep(1)
-                print(f"efficiency: {agent.classes_dict['HVAC'].efficiency}")
+                #print(f"efficiency: {agent.classes_dict['HVAC'].efficiency}")
             except KeyboardInterrupt:
                 print("SIMULATION INTERRUPTED BY USER COMMAND")
                 break
@@ -85,7 +96,7 @@ class Simulation:
         hvac.setTemperature_Internal(room.temperature)
 
         #initialize dataframe
-        df = pd.DataFrame(columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode',"Ambient_Temperature"])
+        df = pd.DataFrame(columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode',"Ambient_Temperature","Fan_Level"])
 
         #initialize clock for simulation
         clock_tz = pytz.timezone('Europe/Rome')
@@ -135,7 +146,7 @@ class Simulation:
                     hvac.Power_Watt = power_aux
                     progLOP_canStart = False
                 agent.tick()
-                df = pd.concat([df, pd.DataFrame([[agent.classes_dict['HVAC'].getTemperature_Internal(), agent.classes_dict['HVAC'].getSetpoint(), agent.classes_dict['HVAC'].getPowerConsumption(), startTime, agent.classes_dict['HVAC'].getHVACMode(), weather.getDegrees()]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode', "Ambient_Temperature"])], ignore_index=True)
+                df = pd.concat([df, pd.DataFrame([[agent.classes_dict['HVAC'].getTemperature_Internal(), agent.classes_dict['HVAC'].getSetpoint(), agent.classes_dict['HVAC'].getPowerConsumption(), startTime, agent.classes_dict['HVAC'].getHVACMode().name, weather.getDegrees(),agent.classes_dict['HVAC'].air_flow_level.name]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode', "Ambient_Temperature","Fan_Level"])], ignore_index=True)
                 
                 startTime += datetime.timedelta(seconds=1)
                 

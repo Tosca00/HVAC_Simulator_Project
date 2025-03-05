@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Mode } from '../user-form/user-form.component';
+import { Mode,FanMode } from '../user-form/user-form.component';
 
 @Component({
   selector: 'app-hvac-realtime-form',
@@ -19,7 +19,9 @@ export class HvacRealtimeFormComponent {
   isOn = false;
   public modes:Mode = Mode.NO_MODE;
   selectedMode = Object.values(Mode);
-  
+
+  public fanModes:FanMode = FanMode.AUTO;
+  selectedFanMode = Object.values(FanMode);
 
 
   onFormSubmit() {

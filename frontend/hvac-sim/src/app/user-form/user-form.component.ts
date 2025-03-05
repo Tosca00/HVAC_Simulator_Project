@@ -7,6 +7,13 @@ export enum Mode {
   NO_MODE = 'NO_MODE'
 }
 
+export enum FanMode {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  AUTO = 'AUTO'
+}
+
 @Component({
   selector: 'app-user-form',
   standalone: false,
@@ -23,6 +30,8 @@ export class UserFormComponent implements OnInit {
   public modes:Mode = Mode.NO_MODE;
   selectedMode = Object.values(Mode);
 
+  public fanModes:FanMode = FanMode.LOW;
+  selectedFanMode = Object.values(FanMode);
   constructor(private http: HttpService) {
     console.log('UserFormComponent constructor');
   }
