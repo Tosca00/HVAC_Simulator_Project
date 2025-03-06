@@ -6,19 +6,15 @@ WORKDIR /app
 
 # Copy package.json and install dependencies
 COPY package*.json ./
-#run clean install of dependencies
+
 RUN npm ci
-#RUN npm install jquery --save
-#RUN npm install @types/jquery --save
-#RUN npm cache clean --force
+
 RUN npm install -g @angular/cli
 #RUN npm install chart.js ng2-charts papaparse
 # Copy the application files
 COPY . .
 # Build the application
 RUN npm run build --configuration=production
-
-
 
 # Use Nginx as base image
 FROM nginx:latest

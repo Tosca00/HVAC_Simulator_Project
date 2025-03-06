@@ -2,6 +2,9 @@ from ..hvac.hvac import HVAC  # Replace with actual class names
 from ..room.roomGeometry import Room,loseTemp  # Replace with actual class names
 from ..weather.weather import Weather  # Replace with actual class names
 
+
+#semplice sistema dizionario per mappare le classi
+#delle varie componenti del sistema HVAC
 class Agent():
 
     classes_dict = {

@@ -39,7 +39,8 @@ class HVAC:
         self.deltaEn = 0.1 #kWh
         self.efficiency = 0.98 #%
         self.eer = 3.00 #standards eer
-        self.Power_Watt = self.BTUs / (3.412* self.eer) #W
+        self.cop = 3.00 #standards cop
+        self.Power_Watt = self.BTUs / (3.412* self.eer) #W inizializzato in modalità raffreddamento
         self.faulty = False
         self.air_flow = 0.18 #m^3/s
         self.supply_air_temp = 0 #°C #per semplicitá si assume che l'aria in uscita sia a temperatura ambiente
@@ -47,8 +48,56 @@ class HVAC:
         self.fan_power_watt = 50  # Default per velocità minima
         self.isFanAuto = True
         self.compressor_power = 0
+        self.energyClassCooling = self.calculateEnergyClass_Cooling()
+        self.energyClassHeating = self.calculateEnergyClass_Heating()
         
 
+    #set di due funzioni, generano la classe energetica in base al cop o eer
+    def calculateEnergyClass_Heating(self):
+        if self.cop < 1.20:
+            return "G"
+        elif self.cop < 1.40:
+            return "F"
+        elif self.cop < 1.60:
+            return "E"
+        elif self.cop < 1.80:
+            return "D"
+        elif self.cop < 2.00:
+            return "C"
+        elif self.cop < 2.30:
+            return "B"
+        elif self.cop < 2.60:
+            return "A"
+        elif self.cop < 3.10:
+            return "A+"
+        elif self.cop < 3.60:
+            return "A++"
+        else:
+            return "A+++"
+    def calculateEnergyClass_Cooling(self):
+        if self.eer < 1.40:
+            return "G"
+        elif self.eer < 1.60:
+            return "F"
+        elif self.eer < 1.80:
+            return "E"
+        elif self.eer < 2.10:
+            return "D"
+        elif self.eer < 2.40:
+            return "C"
+        elif self.eer < 2.60:
+            return "B"
+        elif self.eer < 3.10:
+            return "A"
+        elif self.eer < 3.60:
+            return "A+"
+        elif self.eer < 4.10:
+            return "A++"
+        else:
+            return "A+++"
+
+
+    #setters e getters
     @property
     def t_int(self):
         return self._t_int
@@ -82,22 +131,29 @@ class HVAC:
         self.deltaTemp = deltaTemp
     def getDeltaTemp(self):
         return self.deltaTemp
-    #da definire meglio, per il momento basiche
+    
+    
+    #spegne il sistema
     def TurnOff(self):
         self.state = self.HVAC_State.OFF
         self.setHVACMode(self.HVAC_Mode.NO_MODE)
         self.power_consumption = 0
-        print("HVAC is now OFF")
+
+    #accende il sistema
     def TurnOn(self,HVAC_Mode):
         self.state = self.HVAC_State.ON
         self.setHVACMode(HVAC_Mode)
-        print("HVAC is now ON")
+        self.Power_Watt = self.BTUs / (3.412* self.eer) #W inizializzato in modalità raffreddamento, perchè se offre 2 modalità diverse potrebbe avere efficienze diverse
+        if HVAC_Mode == self.HVAC_Mode.HEATING:
+            self.Power_Watt = self.BTUs / (3.412* self.cop)
 
+    #sistema inattivo
     def setInactive(self):
         self.state = self.HVAC_State.INACTIVE
         self.power_consumption = 0
     
 
+    #per il cambio manuale della velocità della ventola, piú alta é la velocitá piú aria viene immessa
     def changeFanPower(self, HVAC_AirFlowLevel):
         if HVAC_AirFlowLevel == self.HVAC_AirFlowLevel.LOW:
             self.fan_power_watt = 50
@@ -115,70 +171,25 @@ class HVAC:
             self.isFanAuto = True
 
 
-
-    #definisce il ciclo di funzionamento del sistema HVAC nel primo caso d'uso
+    #deprecata
+    #definisce il ciclo di funzionamento del sistema HVAC nel primo caso d'uso, ormai obsoleta
     def HVAC_Working(self,deltaTemp,setpoint):
         self.t_int += round(deltaTemp,1)
         self.setpoint = setpoint
 
-    #stampa lo stato attuale del sistema HVAC, solo se acceso
+    #deprecata
+    #stampa lo stato attuale del sistema HVAC, solo se acceso, utilizzata nei primi casi d'uso
     def PrintStatus(self):
         print(f"current setpoint : {str(self.getSetpoint())} °C")
         print(f"temperature : {str(self.getTemperature_Internal())} °C")
-
         if self.getHVAC_State() == self.HVAC_State.OFF and self.getHVACMode() != self.HVAC_Mode.NO_MODE:
             raise HVACException("HVAC is OFF but has a mode set")
         else:
             print(f"State : {str(self.getHVAC_State())} -- Mode : {str(self.getHVACMode())}")
 
-        
-    '''
-    secondo caso d'uso, da approfondire
-    serve a decidere se il sistema deve raffreddare o riscaldare, oltre che rispettare una soglia di differenza dall'obbiettivo
-    perché per esempio se la temperatura obbiettivo fosse 22°C e il sistema si spegnesse subito, il sistema si accenderebbe e spegnerebbe continuamente
+    
 
-    descrizione algoritmo:
-        - definire un differenziale di temperatura da quella obbiettivo (tempDiff)
-        - se il sistema é acceso e sta riscaldando
-            - se la temperatura interna é maggiore o uguale a quella obbiettivo
-                - spegni il sistema
-        -altrimenti se il sistema é acceso e sta raffreddando
-             -se la temperatura interna é minore o uguale a quella obbiettivo
-                - spegni il sistema
-        - altrimenti se il sistema é spento
-            - se la temperatura interna é maggiore o uguale a quella obbiettivo - il differenziale
-                - accendi il sistema e imposta modalitá riscaldamento
-            - altrimenti se la temperatura interna é minore o uguale a quella obbiettivo + il differenziale
-                - accendi il sistema e imposta modalitá raffreddamento
-        - se la modalitá é riscaldamento
-            - aumenta la temperatura interna di deltaTemp
-        - altrimenti se la modalitá é raffreddamento
-            - diminuisci la temperatura interna di deltaTemp
-   
-
-    #nota: al momento si puó utilzzare solo in modalitá riscaldamento
-    def thermalWorking(self, deltaTemp, setpoint):
-        tempDiff = 2 #differenziale di temperatura dal setpoint
-        if self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.HEATING:
-            if self.getTemperature_Internal() >= self.getSetpoint() + tempDiff:
-                self.TurnOff()
-        elif self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.COOLING:
-            if self.getTemperature_Internal() <= self.getSetpoint() - tempDiff:
-                self.TurnOff()
-        elif self.getHVAC_State() == self.HVAC_State.OFF:
-                if self.getTemperature_Internal() <= self.getSetpoint() - tempDiff:
-                    self.TurnOn()
-                    self.setHVACMode(self.HVAC_Mode.HEATING)
-                elif self.getTemperature_Internal() >= self.getSetpoint() + tempDiff:
-                    self.TurnOn()
-                    self.setHVACMode(self.HVAC_Mode.COOLING)
-        if self.getHVACMode() == self.HVAC_Mode.HEATING and self.getHVAC_State() == self.HVAC_State.ON:
-            self.setTemperature_Internal(self.getTemperature_Internal() + deltaTemp)
-        elif self.getHVACMode() == self.HVAC_Mode.COOLING and self.getHVAC_State() == self.HVAC_State.ON:
-            self.setTemperature_Internal(self.getTemperature_Internal() - deltaTemp)
-
- '''
-
+    #definisce le soglie di temperatura per il cambio di modalitá del COMPRESSORE
     def changePower(self):
         powerFactor = 1
         if self.getTemperature_Internal() > self.getSetpoint() and self.getHVACMode() == self.HVAC_Mode.HEATING:
@@ -187,6 +198,7 @@ class HVAC:
             powerFactor = 0.5
         return powerFactor
     
+    #gestisce la ventilazione se il sistema è impostato su modalità automatica
     def fanAuto(self):
         if self.getTemperature_Internal() < (self.getSetpoint() - 2) and self.getHVACMode() == self.HVAC_Mode.HEATING:
             self.changeFanPower(self.HVAC_AirFlowLevel.HIGH)
@@ -203,6 +215,11 @@ class HVAC:
             self.changeFanPower(self.HVAC_AirFlowLevel.LOW)
 
 
+    '''
+    funzione principale di gestione:
+    controllando prima lo stato, modalità e temperature interne, decide se accendere, spegnere o mantenere attivo il sistema HVAC
+    altrimenti se il sistema è acceso e la modalità è impostata, calcola il deltaT e lo applica alla temperatura interna
+    '''
     def CoolingOrHeating(self, room):
         if self.getHVAC_State() == self.HVAC_State.ON and self.getHVACMode() == self.HVAC_Mode.HEATING:
             if self.getTemperature_Internal() >= self.getSetpoint() + self.tempDiff:
@@ -217,8 +234,8 @@ class HVAC:
             elif self.getHVACMode() == self.HVAC_Mode.COOLING:
                 if self.getTemperature_Internal() >= self.getSetpoint():
                     self.TurnOn(self.HVAC_Mode.COOLING)
-        if not self.faulty:
-            if self.isFanAuto:
+        if not self.faulty: #se il sistema è guasto non deve essere immessa temperatura
+            if self.isFanAuto: #per controllo automatico della ventola
                 self.fanAuto()
             #print(f"fan level : {HVAC.HVAC_AirFlowLevel(self.air_flow_level).name}")
             #print(f"compressor power : {self.compressor_power} W -- fan power : {self.fan_power_watt} W")
@@ -229,6 +246,9 @@ class HVAC:
                 deltaT = self.ChangeTemp(room)
                 self.setTemperature_Internal(self.getTemperature_Internal() - deltaT)
 
+
+    #deprecata
+    #deduce il consumo istantaneo del sistema HVAC,utilizzata nelle prime versioni, ormai obsoleta
     def calculate_consumption(self):
         if self.getHVAC_State() == HVAC.HVAC_State.ON:
             if self.getHVACMode() == HVAC.HVAC_Mode.HEATING:
@@ -248,7 +268,8 @@ class HVAC:
             return 0 #hvac è spento
         
 
-    
+    #deprecata
+    #deduce il cambio di temperatura del sistema HVAC, utilizzata nelle prime versioni, ormai obsoleta    
     def UpdateTemp(self, room: Room):
         consumption = self.calculate_consumption()
         power_factor = consumption / 1000.0
@@ -260,6 +281,8 @@ class HVAC:
             elif self.getHVACMode() == self.HVAC_Mode.COOLING:
                 self.setTemperature_Internal(self.getTemperature_Internal() - temp_change)
 
+
+    #setta i parametri del sistema HVAC in base a un array parametrizzato, per il formato fare riferimento al file parametrizedArray.py
     def setHvac(self,parametrized_array:np.array,position):
         if position > len(parametrized_array):
             raise IndexError("Position out of bound")
@@ -275,46 +298,54 @@ class HVAC:
         if parametrized_array[position][3] == "OFF":
                 self.TurnOff()
 
+    #funzione principale per il cambio di temperatura del sistema HVAC, rappresenta una semplificazione della legge del bilancio termico
     def ChangeTemp(self, room: Room):
-        # Calculate temperature difference
+
+        #differenza di temperatura
         temp_diff = self.getTemperature_Internal() - Weather.degrees
 
+        # Potenza del compressore, aggiustata in base alla temperatura interna
         self.compressor_power = self.Power_Watt * self.changePower()
-        # Energy supplied by the HVAC system
-        Q_In = ((self.compressor_power) + self.fan_power_watt) * self.efficiency 
 
-        # Energy lost to the environment
+        #energia totale immessa
+        Q_In = (self.compressor_power + self.fan_power_watt) * self.efficiency 
+
+        #energia totale dispersa
         Q_Out = room.heatLossCoefficient * room.wallsArea * temp_diff
 
+        # Massa d'aria immessa effettiva
         air_mass_flow = self.air_flow * Weather.rho
 
-
         #l'aria immessa deve essere piú calda di quella interna per riscaldare, piú fredda per raffreddare
+        #si è scelto un approccio semplicistico con soglia fissa
         self.supply_air_temp = self.getTemperature_Internal() + 8
-
         if self.getHVACMode() == self.HVAC_Mode.COOLING:
             self.supply_air_temp = self.getTemperature_Internal() - 8
 
-        print(f"supply air temp : {self.supply_air_temp}")
+        #print(f"supply air temp : {self.supply_air_temp}")
+
+        # energia aria immessa
         W_s = air_mass_flow * Weather.specific_heat * (self.supply_air_temp - self.getTemperature_Internal())
 
+        # Se il sistema è in modalità raffreddamento, l'energia immessa è negativa
         if self.getHVACMode() == self.HVAC_Mode.COOLING:
             W_s = -W_s
-        # Net energy change
+
+
+        #considera l'energia immessa e dispersa
         Q_eff = Q_In + W_s - Q_Out
 
         #print(f"walls area : {room.wallsArea}")
         #print(f"room heat loss coefficient : {room.heatLossCoefficient}")
         #print(f"room heat capacity : {room.heatCapacity}")
 
-        # Effective temperature change
+        # Cambio di temperatura effettivo
         delta_temp_effective = Q_eff / room.heatCapacity
 
-        # Power consumption for this interval
-        self.power_consumption = abs(Q_In)
+        # cosumo totale per l'intera iterazione
+        self.power_consumption = self.compressor_power + self.fan_power_watt
 
-        print(f"deltatemp effective : {delta_temp_effective}")
+        #print(f"deltatemp effective : {delta_temp_effective}")
 
-        # Return the temperature change
         return delta_temp_effective
             

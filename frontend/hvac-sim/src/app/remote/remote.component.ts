@@ -103,10 +103,17 @@ export class RemoteComponent implements OnInit {
     a.click();
   }
 
+  simulation_status :HTMLElement = document.createElement('p');
   async interruptSim()
   {
     const result = await this.http.interruptSimulation(true);
     this.isRealTimeSimStarted = false;
+    this.simulation_status.textContent = 'Simulation: Interrupted';
+    const divToAppend = document.getElementById('resultContainer');
+    if(divToAppend)
+    {
+      divToAppend.appendChild(this.simulation_status);
+    }
     console.log(result.data);
   }
   
@@ -181,6 +188,12 @@ export class RemoteComponent implements OnInit {
       }
       else if(this.sim_type == 1 && !this.isRealTimeSimStarted) 
       {
+        this.simulation_status.textContent = 'Simulation : Active';
+        const divToAppend = document.getElementById('resultContainer');
+        if(divToAppend)
+        {
+          divToAppend.appendChild(this.simulation_status);
+        }
         await this.createFormResponceRealTime();
       }
       else

@@ -2,6 +2,7 @@ import random
 from ..weather.weather import Weather
 import math
 
+#in future versioni si pensava di calcolare il calore trasmesso dalle persone e dispositivi nella stanza
 class Lamp:
     wattage = 0
 
@@ -41,6 +42,7 @@ class Room:
         self.wallsArea = 2 * (self.height * self.width + self.height * self.length + self.width * self.length)
 
 
+    #setters e getters
     def setTemperature(self, temperature):
         self.temperature = temperature
 
@@ -61,6 +63,7 @@ class Room:
         else:
             print("Room is already empty")
 
+    #tra i vari tipi di dispersione di calore si vogliono ricreare in particolare le dispersioni dovute a persone e lampade
     def InternalLoadPeople(self,time):
         personaHeatAverage = 105 #W
         return self.people * time * personaHeatAverage
@@ -68,9 +71,9 @@ class Room:
         return sum([lamp.wattage for lamp in self.lamps]) * time
         
     
-#per il momento la perdita di temperatura è costante e converge su quella ambiente
+#per il momento la perdita di temperatura è esponenziale e converge su quella ambiente
 def loseTemp(weather: Weather, hvac):
     diff = hvac.getTemperature_Internal() - weather.degrees
-    decay_factor = 0.001  # Adjust this factor to control the rate of exponential decay
+    decay_factor = 0.001  # controlla il rateo di convergenza
     adjusted_diff = diff * math.exp(-decay_factor)
     hvac.setTemperature_Internal(weather.degrees + adjusted_diff)

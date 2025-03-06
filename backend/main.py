@@ -53,8 +53,9 @@ def initializeSimType():
     sim_type = data.get("simulationType")
     return sim_type
 
-hvac: HVAC = HVAC()
+hvac: HVAC = HVAC() #hvac globale
 
+#definizione endpoint per la modifica dei parametri dell'HVAC
 @app.post("/changeHVACsettings")
 def change_settings(data: dict):
     if websocket:
@@ -77,10 +78,10 @@ def change_settings(data: dict):
                 enumFan = HVAC.HVAC_AirFlowLevel.HIGH
             elif fanMode == "MEDIUM":
                 enumFan = HVAC.HVAC_AirFlowLevel.MEDIUM
-            hvac.changeFanPower(enumFan)
-        
+            hvac.changeFanPower(enumFan)   
     return {"message": "HVAC settings changed successfully"}
 
+#inizializzazione simulazione in tempo reale
 @app.post("/setupRealTime")
 def save_data_realtime(data: dict):
     with open("data.json", "w") as f:
@@ -93,6 +94,7 @@ def save_data_realtime(data: dict):
     room = initializeRoom()
     return {"message": "Data saved successfully"}
 
+#coppia endpoint anomalia efficienza
 @app.post("/restoreEffAnomaly")
 def restoreEffAnomaly():
     hvac.efficiency = 0.98
@@ -103,6 +105,8 @@ def efficiencyAnomaly():
     hvac.efficiency = 0.2
     return {"message": "Efficiency anomaly is active."}
 
+
+#coppia endpoint anomalia soglia
 @app.post("/thresholdAnomaly")
 def thresholdAnomaly():
     hvac.tempDiff = 4
@@ -113,7 +117,18 @@ def restoreThreshAnomaly():
     hvac.tempDiff = 2
     return {"message": f"Threshold anomaly restored to original value {hvac.tempDiff}."}
 
+# coppia endpoint anomalia guasto meccanico
+@app.post("/restoreFaultAnomaly")
+def restoreFaultAnomaly():
+    hvac.faulty = False
+    return {"message": f"Fault anomaly has been disabled."}
 
+@app.post("/faultAnomaly")
+def faultAnomaly():
+    hvac.faulty = True
+    return {"message": f"Fault anomaly is active."}
+
+# coppia endpoint anomalia perdita di potenza spot
 @app.post("/lossOfPowerAnomaly")
 def lossOfPowerAnomaly():
     thread = threading.Thread(target=actuate_loss_of_power)
@@ -122,7 +137,7 @@ def lossOfPowerAnomaly():
     return {"message": "Loss of power anomaly ended"}
 
 
-# Main loss of power function
+# perdita di potenza a intervalli casuali
 def actuate_loss_of_power():
     power_aux = hvac.Power_Watt
     for i in range(20):
@@ -141,6 +156,7 @@ startDateProg = datetime.datetime(1970, 1, 1, tzinfo=pytz.utc).strptime("1970-01
 endDateProg = datetime.datetime(1970, 1, 1, tzinfo=pytz.utc).strptime("1970-01-01 00:00:00", '%Y-%m-%d %H:%M:%S')
 progAnomalyName = "none"
 
+#definizioni endpoint per la programmazione delle anomalie
 @app.post("/sendEffAnomalyProg")
 def sendEffAnomalyProg(data: dict):
     global startDateProg, endDateProg, progAnomalyName
@@ -175,6 +191,7 @@ def sendLOPAnomalyProg(data: dict):
     progAnomalyName = "lossOfPower"
     print(f"date from {startDateProg} to -----")
     
+#gestione anomalia programmata
 def applyAnomlayProg(isAnomalyActive: bool):
     if isAnomalyActive:
         if(progAnomalyName == "efficiency"):
@@ -183,7 +200,6 @@ def applyAnomlayProg(isAnomalyActive: bool):
             hvac.tempDiff = 4
         elif(progAnomalyName == "fault"):
             hvac.faulty = True
-        
     else:
         if(progAnomalyName == "efficiency"):
             hvac.efficiency = 0.98
@@ -193,16 +209,8 @@ def applyAnomlayProg(isAnomalyActive: bool):
             hvac.faulty = False
 
 
-@app.post("/restoreFaultAnomaly")
-def restoreFaultAnomaly():
-    hvac.faulty = False
-    return {"message": f"Fault anomaly has been disabled."}
 
-@app.post("/faultAnomaly")
-def faultAnomaly():
-    hvac.faulty = True
-    return {"message": f"Fault anomaly is active."}
-
+#inzializzazione simulazione parametrica
 @app.post("/setupParameterized")
 def save_data_param(data: dict):
     with open("data.json", "w") as f:
@@ -220,11 +228,12 @@ def save_data_param(data: dict):
 
 
 @app.post("/")
-async def save_data():
+async def default():
     return {"message": "dafault address"}
 
 interrupt_signal = threading.Event()
 
+#ferma simulazione real time
 @app.post("/interrupt")
 def interrupt_simulation():
     global interrupt_signal
@@ -232,13 +241,14 @@ def interrupt_simulation():
     return {"message": "Simulation interrupted"}
 
 
+#avvio simulazione in tempo reale, endpoint principale definito sotto
 async def run_simulationRealTime():
     sim = Simulation()
     initializeRoom()
     initializeWeather()
     interrupt_signal.clear()
-    
     await async_connectClient()
+
     if(isWebSocketOpen()is False):
         return {"message": "Websocket connection is not open, please open the connection and try again","isResCorrect": False}
     await sim.run_simulation_realtime(hvac, room, weather, interrupt_signal,sendRowToClient,send_post_call)
@@ -254,6 +264,7 @@ async def run_simulationRealTime():
     return {"message": "Simulation completed successfully", "csv_content": csv_content}
 
 
+#endpoint originale per la simulazione in tempo reale, deve essere eseguita in un thread separato
 @app.post("/simulateRealTime")
 def simulationRoute():
     thread = threading.Thread(target=asyncio.run, args=(run_simulationRealTime(),))
@@ -263,12 +274,13 @@ def simulationRoute():
 async def closeSocket():
     await websocket.close()
 
+
+#endpoint per simulazione parametrica
 @app.post("/simulateParameterized")
 def run_simulationParam():
     sim = Simulation()
     initializeRoom()
     initializeWeather()
-
     try:
         sim.run_simulation_parameterized(param_arr, hvac, room, weather,startDateProg,endDateProg,applyAnomlayProg,progAnomalyName)	
     except Exception as e:
@@ -282,7 +294,8 @@ def run_simulationParam():
     
     return {"message": "Simulation completed successfully, download data using the following button", "csv_content": csv_content, "isResCorrect": True}
 
-websocket : WebSocket = None
+
+websocket : WebSocket = None #websocket globale
 @app.websocket("/ws")
 async def websocket_endpoint(stream: WebSocket):
     global websocket
@@ -300,11 +313,12 @@ def isWebSocketOpen():
     return websocket is not None
 
 
+#invia messaggio al client
 async def sendRowToClient(message: str) -> None:
     print(f"Sending message: {message}")
     await websocket.send_text(message)
     
-
+#pubblica dati su MQTT
 async def send_post_call(data: dict,clock):
     publish_data(data,clock)
     

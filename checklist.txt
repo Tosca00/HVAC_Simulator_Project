@@ -1,7 +1,18 @@
-note : lasciare weather basica al momento fino a implementazione di un modello termico verosimile
+introdotti coefficienti EER e COP:
+-- EER (Energy Efficiency Ratio) per il raffreddamentp
+-- COP (Coefficient Of performance) per il riscaldamento
 
-TODO:
+Dipendentemente dalle classi di efficienza si ha come segue :
+Classe di efficienza energetica | Doppio condotto (EER nominale) | Doppio condotto (COP nominale) | Singolo condotto (EER nominale) | Singolo condotto (COP nominale)
+--------------------------------|-------------------------------|-------------------------------|--------------------------------|--------------------------------
+A+++                            | ≥ 4,10                        | ≥ 4,60                        | ≥ 4,10                         | ≥ 3,60
+A++                             | 3,60 ≤ EER < 4,10             | 4,10 ≤ COP < 4,60             | 3,60 ≤ EER < 4,10              | 3,10 ≤ COP < 3,60
+A+                              | 3,10 ≤ EER < 3,60             | 3,60 ≤ COP < 4,10             | 3,10 ≤ EER < 3,60              | 2,60 ≤ COP < 3,10
+A                               | 2,60 ≤ EER < 3,10             | 3,10 ≤ COP < 3,60             | 2,60 ≤ EER < 3,10              | 2,30 ≤ COP < 2,60
+B                               | 2,40 ≤ EER < 2,60             | 2,60 ≤ COP < 3,10             | 2,40 ≤ EER < 2,60              | 2,00 ≤ COP < 2,30
+C                               | 2,10 ≤ EER < 2,40             | 2,40 ≤ COP < 2,60             | 2,10 ≤ EER < 2,40              | 1,80 ≤ COP < 2,00
+D                               | 1,80 ≤ EER < 2,10             | 2,00 ≤ COP < 2,40             | 1,80 ≤ EER < 2,10              | 1,60 ≤ COP < 1,80
+E                               | 1,60 ≤ EER < 1,80             | 1,80 ≤ COP < 2,00             | 1,60 ≤ EER < 1,80              | 1,40 ≤ COP < 1,60
+F                               | 1,40 ≤ EER < 1,60             | 1,60 ≤ COP < 1,80             | 1,40 ≤ EER < 1,60              | 1,20 ≤ COP < 1,40
+G                               | < 1,40                        | < 1,60                        | < 1,40                         | < 1,20
 
-backend : riorganizzare le funzioni per fare si che aspettino un json in input (o salvare i dati da un file json)
-
-frontend : eseguire chiamata http su porta backend in post ai corretti URL

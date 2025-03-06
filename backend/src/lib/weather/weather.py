@@ -1,3 +1,4 @@
+#per il momento il sistema utilizza una temperatura esterna costante
 class Weather:
     degrees = 0
     humidity = 0

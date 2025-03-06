@@ -8,15 +8,17 @@ An element with a "No_Mode" value interrupts the simulation.
 Starting from a predefined TimeStamp (GMT format) [exe: 2025-01-01 00:00:00]
 '''
 
-# Define the parameterized array
+# manually define the parameterized array, used for testing
 parametrized_array_test = np.array([
     ['2025-01-01 00:00:00', 19.0, 'COOLING',"ON"],
     ['2025-01-01 01:00:00', 22.0, 'COOLING',"ON"],
     ['2025-01-01 02:00:00', 20.0, 'COOLING',"ON"],
     ['2025-01-01 03:00:00', 27.0, 'HEATING',"ON"],
     ['2025-01-01 04:00:00', 30.0, 'COOLING',"OFF"],
-    #['2025-01-01 02:30:00', 21.0, 'HEATING',"OFF"]
+    ['2025-01-01 02:30:00', 21.0, 'HEATING',"OFF"]
 ], dtype=object)
+
+
 
 
 def check_array_params(parametrized_array):
@@ -42,11 +44,12 @@ def check_array_params(parametrized_array):
         previous_date = parametrized_array[i][0]
         
 
-
 def printArr(parameterized_array: np.array):
     for array in parameterized_array:
         print(array)
 
+
+#costruisce e restituisce un array paramettrizzato a partire da un file JSON
 def setupArrFromJSON(json_file_path):
     with open(json_file_path, 'r') as file:
         data = json.load(file)
@@ -59,7 +62,6 @@ def setupArrFromJSON(json_file_path):
         isOn = response["isOn"]
         parametrized_array.append([date, temperature, selectedMode, isOn])
 
-    
     with open('res.txt', 'w'):
         np.savetxt('parametrized_array.txt', parametrized_array, fmt='%s', delimiter=',')
     

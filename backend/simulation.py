@@ -18,13 +18,16 @@ import matplotlib.dates as mdates
 from src.tests.parametrizedArray import *
 
 
+#classe contiene le due simulazioni, una in tempo reale e una parametrizzata
 class Simulation:
 
-    #aux variables for debugging 
+    #variabili ausiliarie per il debug dei grafi e liste, utilizzate quando il codice era scritto interamente su python 
     debugLists = False
     debugGraphs = False
 
-    async def run_simulation_realtime(self, hvac: HVAC, room: Room, weather: Weather, stop_signal: threading.Event, sendRowToClient, sendPostCall):
+    #funzione per la simulazione in tempo reale
+    async def run_simulation_realtime(self, hvac: HVAC, room: Room, weather: Weather, stop_signal: threading.Event, sendRowToClient, publishMQTT):
+        #inizializzazioni
         room.setTemperature(weather.getDegrees())
         # at start time hvac and room temperature are the same
         hvac.setTemperature_Internal(room.temperature)
@@ -43,6 +46,7 @@ class Simulation:
 
         hvac.setTemperature_Internal(room.temperature)
 
+        #creazione di array parametrizzati per la simulazione in tempo reale e setup
         data: dict
         with open("data.json", "r") as f:
             data = json.load(f)
@@ -55,6 +59,8 @@ class Simulation:
         arrayParam.append([0,setpoint, mode, isOn])
 
         hvac.setHvac(arrayParam,0)
+
+        #in futuro sarebbe da implementare nella inizializzazione da array parametrico
         if fanMode != "AUTO":
             agent.classes_dict['HVAC'].isFanAuto = False
         
@@ -65,22 +71,22 @@ class Simulation:
             enumFan = HVAC.HVAC_AirFlowLevel.MEDIUM
         
         agent.classes_dict['HVAC'].changeFanPower(enumFan)
+
+        #ciclo di simulazione principale
         while not stop_signal.is_set():
             try:
                 startTime = datetime.datetime.now(clock_tz).replace(microsecond=0, tzinfo=None)
                 agent.tick()
                 df = pd.concat([df, pd.DataFrame([[agent.classes_dict['HVAC'].getTemperature_Internal(), agent.classes_dict['HVAC'].getSetpoint(), agent.classes_dict['HVAC'].getPowerConsumption(), startTime, agent.classes_dict['HVAC'].getHVACMode().name, weather.getDegrees(), agent.classes_dict['HVAC'].air_flow_level.name]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode', "Ambient_Temperature","Fan_Level"])], ignore_index=True)
-                #print(f"fan mode: {fanMode} fan auto {agent.classes_dict['HVAC'].isFanAuto} fan level {agent.classes_dict['HVAC'].air_flow_level}")
                 await sendRowToClient(f"{agent.classes_dict['HVAC'].getTemperature_Internal()},{agent.classes_dict['HVAC'].getSetpoint()},{agent.classes_dict['HVAC'].getPowerConsumption()},{startTime},{agent.classes_dict['HVAC'].getHVACMode()},{weather.getDegrees()},{agent.classes_dict['HVAC'].state},{agent.classes_dict['HVAC'].air_flow_level.name}")
-                
-                await sendPostCall(agent,startTime)
+                await publishMQTT(agent,startTime)
                 time.sleep(1)
-                #print(f"efficiency: {agent.classes_dict['HVAC'].efficiency}")
             except KeyboardInterrupt:
                 print("SIMULATION INTERRUPTED BY USER COMMAND")
                 break
 
         print("SIMULATION ENDED")
+        #salva dati su file csv al termine della simulazione
         df.to_csv('./src/data_realtime.csv', index=False)
         if self.debugGraphs:
             plot_temperaturesAndSetpoint(df)
@@ -89,7 +95,10 @@ class Simulation:
             print(df)
 
 
+    #funzione per la simulazione parametrizzata
     def run_simulation_parameterized(self,parametrized_array,hvac :HVAC,room :Room,weather :Weather, startDateProg :datetime.datetime, endDateProg :datetime.datetime,applyAnomlayProg: callable,progAnomalyName :str):
+        
+        #inizializzazioni
         #initialize room temperature
         room.setTemperature(weather.getDegrees())
         #at start time hvac and room temperature are the same
@@ -118,14 +127,16 @@ class Simulation:
         except ValueError as e:
             raise e
 
+        #counter e ausiliarie per la durata dell'anomalia lossOfPower
         i = 0
         progLOP_counter = 0
         progLOP_canStart = False
         power_aux = hvac.Power_Watt
         
+        #ciclo principale di simulazione
         try:
-            while startTime <= datetime.datetime.strptime(parametrized_array[len(parametrized_array)-1][0], '%Y-%m-%d %H:%M:%S'):
-                if parametrized_array[i][0] == startTime.strftime('%Y-%m-%d %H:%M:%S'):
+            while startTime <= datetime.datetime.strptime(parametrized_array[len(parametrized_array)-1][0], '%Y-%m-%d %H:%M:%S'): #finchè non si raggiunge l'ultima data programmata
+                if parametrized_array[i][0] == startTime.strftime('%Y-%m-%d %H:%M:%S'): # se viene trovata una data programmata, cambio parametri hvac
                     hvac.setHvac(parametrized_array,i)
                     i += 1
                 if startTime == startDateProg:
@@ -133,8 +144,9 @@ class Simulation:
                     applyAnomlayProg(True)
                 if startTime == endDateProg:
                     applyAnomlayProg(False)
-                if(progAnomalyName == "lossOfPower" and progLOP_canStart and progLOP_counter <= 30):
-                    
+
+                #se l'anomalia è attiva, ogni 30 secondi cambia il consumo di energia a intervalli casuali
+                if(progAnomalyName == "lossOfPower" and progLOP_canStart and progLOP_counter <= 30):     
                     rand = random.randint(0,1)
                     print(f"LOP anomaly active with counter {progLOP_counter} and rand : {rand}")
                     if(rand == 1):
@@ -145,6 +157,7 @@ class Simulation:
                 else:
                     hvac.Power_Watt = power_aux
                     progLOP_canStart = False
+
                 agent.tick()
                 df = pd.concat([df, pd.DataFrame([[agent.classes_dict['HVAC'].getTemperature_Internal(), agent.classes_dict['HVAC'].getSetpoint(), agent.classes_dict['HVAC'].getPowerConsumption(), startTime, agent.classes_dict['HVAC'].getHVACMode().name, weather.getDegrees(),agent.classes_dict['HVAC'].air_flow_level.name]], columns=['Temperature', 'Setpoint', 'Watts', 'Timestamp', 'Mode', "Ambient_Temperature","Fan_Level"])], ignore_index=True)
                 
@@ -154,24 +167,26 @@ class Simulation:
             print("SIMULATION INTERRUPTED BY USER COMMAND")
             exit()
 
-        print(f"found {i} dates.")
+        #print(f"found {i} dates.")
         # Create and save DataFrame after the simulation loop ends
         #print(f"total time elapsed : {str(time_counter)} seconds")
         df.to_csv('./src/data.csv', index=False)
-        print(f"startTime value : {parametrized_array[len(parametrized_array)-1][0]}")
+        #print(f"startTime value : {parametrized_array[len(parametrized_array)-1][0]}")
         #print(f"room temperature : {str(room.temperature)} °C")
         if self.debugGraphs:
             plot_temperaturesAndSetpoint(df)
             plot_powerConsumption(df)
             print(df)
 
-       
         if self.debugLists :
             print("----------------------------")
         
         print("simulation ended")
 
 
+
+
+#semplice generazione grafici in python, non più utilizzate
 def plot_temperaturesAndSetpoint(df):
     df_copy = df.copy()
     df_copy['Timestamp'] = pd.to_datetime(df_copy['Timestamp'])

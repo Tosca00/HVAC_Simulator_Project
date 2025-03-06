@@ -13,26 +13,14 @@ def connectClient():
     client.connect(mqtt_broker, mqtt_port, 60)
     return 0
 
+#necessità di funzione asincrona perchè eseguita in un thread separato
 async def async_connectClient():
     loop = asyncio.get_event_loop()
     loop.run_in_executor(None, connectClient)
 
+
 def publish_data(agent: Agent,clock):
     timestamp = clock.strftime('%Y-%m-%d %H:%M:%S')
-    
-    if agent.classes_dict['HVAC'].getHVACMode() == HVAC.HVAC_Mode.HEATING:
-        mode = "HEATING"
-    elif agent.classes_dict['HVAC'].getHVACMode() == HVAC.HVAC_Mode.COOLING:
-        mode = "COOLING"
-    else:
-        mode = "NO_MODE"
-
-    if agent.classes_dict['HVAC'].getHVAC_State() == HVAC.HVAC_State.OFF:
-        status = "OFF"
-    elif agent.classes_dict['HVAC'].getHVAC_State() == HVAC.HVAC_State.ON:
-        status = "ON"
-    else:
-        status = "INACTIVE"
 
     agent_data = {
         "room": [
@@ -56,9 +44,10 @@ def publish_data(agent: Agent,clock):
                 "ts": timestamp,
                 "values": {
                     "setpoint": agent.classes_dict['HVAC'].getSetpoint(),
-                    "mode":mode,
-                    "status": status,
-                    "power": agent.classes_dict['HVAC'].getPowerConsumption()
+                    "mode":agent.classes_dict['HVAC'].mode.name,
+                    "status": agent.classes_dict['HVAC'].state.name,
+                    "power": agent.classes_dict['HVAC'].getPowerConsumption(),
+                    "fan_level": agent.classes_dict['HVAC'].air_flow_level.name
                 }
             }
         ]
