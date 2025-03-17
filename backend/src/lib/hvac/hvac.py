@@ -36,18 +36,17 @@ class HVAC:
         self.peak_power = 1000 #W
         self.BTUs = 9000 #BTUs
         self.tempDiff = 2
-        self.deltaEn = 0.1 #kWh
-        self.efficiency = 0.98 #%
+        self.efficiency = 0.98 #% eddicienza generale
         self.eer = 3.00 #standards eer
         self.cop = 3.00 #standards cop
         self.Power_Watt = self.BTUs / (3.412* self.eer) #W inizializzato in modalità raffreddamento
-        self.faulty = False
+        self.faulty = False #se il sistema è guasto
         self.air_flow = 0.18 #m^3/s
         self.supply_air_temp = 0 #°C #per semplicitá si assume che l'aria in uscita sia a temperatura ambiente
         self.air_flow_level = self.HVAC_AirFlowLevel.HIGH
         self.fan_power_watt = 50  # Default per velocità minima
         self.isFanAuto = True
-        self.compressor_power = 0
+        self.compressor_power = 0 #kW
         self.energyClassCooling = self.calculateEnergyClass_Cooling()
         self.energyClassHeating = self.calculateEnergyClass_Heating()
         
