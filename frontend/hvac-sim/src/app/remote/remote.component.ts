@@ -110,7 +110,7 @@ export class RemoteComponent implements OnInit {
     this.isRealTimeSimStarted = false;
     this.simulation_status.textContent = 'Simulation: Interrupted';
     const divToAppend = document.getElementById('resultContainer');
-    if(divToAppend)
+    if(divToAppend && this.sim_type == 1)
     {
       divToAppend.appendChild(this.simulation_status);
     }
