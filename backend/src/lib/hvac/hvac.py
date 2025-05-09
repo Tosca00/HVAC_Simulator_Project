@@ -51,7 +51,7 @@ class HVAC:
         self.energyClassHeating = self.calculateEnergyClass_Heating()
         
 
-    #set di due funzioni, generano la classe energetica in base al cop o eer
+    #set di due funzioni, generano la classe energetica in base al cop o eer (nota: sono consapevole di aver scritto una mostruositá inguardabile)
     def calculateEnergyClass_Heating(self):
         if self.cop < 1.20:
             return "G"

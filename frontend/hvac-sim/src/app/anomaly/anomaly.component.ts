@@ -14,12 +14,15 @@ export class AnomalyComponent implements OnInit {
 
   @Input() sim_type:number = 0;
 
-  isEffset: boolean = false;
-  isThreshset: boolean = false;
-  isFaultset: boolean = false;
+
   dateFrom: string = new Date().toISOString().substring(0, 16);
   dateTo: string = new Date().toISOString().substring(0, 16);
   progAnomalyType: string = '';
+
+  //per anomalie
+  isEffset: boolean = false;
+  isThreshset: boolean = false;
+  isFaultset: boolean = false;
 
   ngOnInit(): void {
     console.log('AnomalyComponent ngOnInit');
@@ -34,6 +37,7 @@ export class AnomalyComponent implements OnInit {
     this.lossOfPowerAnomalyText.style.display = 'none';
   }
 
+  //efficiency anomaly
   effAnomalyText : HTMLElement = document.createElement('p');
   async efficiency()
   {
@@ -68,6 +72,7 @@ export class AnomalyComponent implements OnInit {
   }
 
 
+  //threshold anomaly
   thresholdAnomalyText : HTMLElement = document.createElement('p');
   async threshold()
   {
@@ -101,6 +106,7 @@ export class AnomalyComponent implements OnInit {
     console.log('threshold_prog');
   }
 
+  //LOP anomaly
   lossOfPowerAnomalyText : HTMLElement = document.createElement('p');
   async lossOfPower()
   {
@@ -125,6 +131,7 @@ export class AnomalyComponent implements OnInit {
     console.log('lossOfPower_prog');
   }
 
+  //fault anomaly
   faultAnomalyText : HTMLElement = document.createElement('p');
   async fault()
   {
@@ -181,6 +188,8 @@ export class AnomalyComponent implements OnInit {
       submitButton.style.display = 'inline-block';
     }
   }
+
+  //sends the anomaly to the backend in programmed mode
   async sendProgAnomaly()
   {
     

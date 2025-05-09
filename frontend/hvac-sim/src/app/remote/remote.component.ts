@@ -30,6 +30,8 @@ export class RemoteComponent implements OnInit {
   }
   userFormComponents : Array<UserFormComponent> = [];
 
+
+  //facendo in questo modo si possono utilizzare i componenti figli per estrarre le variabili
   @ViewChild(ChartComponentComponent) chartComponent!: ChartComponentComponent
 
   @ViewChild(WeatherRoomComponent) weatherRoom!: WeatherRoomComponent;
@@ -125,6 +127,7 @@ export class RemoteComponent implements OnInit {
     this.sim_type = sim_type;
   }
 
+  //usato principalmente per la simulazione offline-non programmata
   p : HTMLElement = document.createElement('p');
   downloadButton : HTMLElement = document.createElement('button');
   async createFormResponse() 
@@ -180,6 +183,7 @@ export class RemoteComponent implements OnInit {
     }
   }
 
+  
   async manageSubmit() {
     console.log('Manage Submit'+ this.isRealTimeSimStarted);
     if(this.sim_type == 0) 
@@ -202,6 +206,8 @@ export class RemoteComponent implements OnInit {
         await this.createFormUpdateRealTime();
     }
   }
+
+  //funzioni update e realtime form
 
   async createFormUpdateRealTime()
   {

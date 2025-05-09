@@ -12,7 +12,7 @@ class Agent():
     'Room': Room,
     'Weather': Weather
     }
-
+    #utilizzata nei cicli di simulazione
     def tick(self):
         self.classes_dict["HVAC"].CoolingOrHeating(self.classes_dict["Room"])
         loseTemp(self.classes_dict["Weather"], self.classes_dict["HVAC"])

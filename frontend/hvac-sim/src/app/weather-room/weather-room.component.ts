@@ -13,6 +13,7 @@ export class WeatherRoomComponent {
     length: number = 1;
     weatherTemperature: number = 20;
 
+    //non serve
     isIntegerOrFloat(value: number): boolean {
       return Number.isInteger(value)
     }
